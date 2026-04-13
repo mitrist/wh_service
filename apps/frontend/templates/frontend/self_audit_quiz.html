@@ -1,0 +1,348 @@
+{% extends "frontend/base.html" %}
+{% block title %}Самоаудит склада{% endblock %}
+{% block extra_head %}
+<style>
+  #quiz-progress-wrap { margin-bottom: 0.75rem; }
+  #quiz-progress-bar {
+    height: 0.35rem;
+    border-radius: 0.2rem;
+    background: rgba(30, 58, 95, 0.12);
+    overflow: hidden;
+  }
+  #quiz-progress-fill {
+    height: 100%;
+    background: var(--landing-primary, #1e3a5f);
+    width: 0%;
+    transition: width 0.35s ease;
+  }
+  #quiz-stage { font-size: 0.8rem; color: #5c6570; }
+  #q5-prelude {
+    border-left: 3px solid #c0392b;
+    background: rgba(192, 57, 43, 0.06);
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  #quiz-toast-host {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1080;
+    width: min(26rem, calc(100vw - 2rem));
+    pointer-events: none;
+  }
+  .quiz-toast {
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    background: #fff;
+    border-left: 4px solid var(--landing-primary, #1e3a5f);
+    border-radius: 0.5rem;
+    padding: 0.9rem 1rem;
+    box-shadow: 0 0.5rem 1.4rem rgba(0,0,0,0.14);
+    margin-bottom: 0.55rem;
+    font-size: 0.93rem;
+    line-height: 1.45;
+  }
+  .quiz-toast.show { opacity: 1; transform: translateY(0); }
+  .quiz-toast.quiz-toast-insight { border-left-color: #c0392b; }
+  @keyframes quizFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  #feedback-text, #insight-text { font-size: 0.95rem; line-height: 1.5; color: #333; }
+  .quiz-panel-muted { font-size: 0.85rem; color: #6c757d; }
+</style>
+{% endblock %}
+{% block content %}
+<p class="text-muted small">Сессия: <code id="sid">{{ session_id }}</code> — сохраните URL браузера.</p>
+<div id="quiz-root" class="card card-body shadow-sm">
+  <p id="loading">Загрузка вопросов…</p>
+  <div id="panel" class="d-none">
+    <div id="quiz-progress-wrap">
+      <div id="quiz-progress-bar"><div id="quiz-progress-fill"></div></div>
+      <div id="quiz-stage" class="mt-1"></div>
+    </div>
+    <div id="q5-prelude" class="d-none"></div>
+    <h2 id="q-title" class="h5"></h2>
+    <p id="q-hint" class="small text-muted"></p>
+    <div id="opts"></div>
+    <div id="open-wrap" class="d-none mt-3">
+      <label class="form-label">Ваш ответ</label>
+      <textarea id="open-text" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="mt-3 d-flex gap-2 flex-wrap">
+      <button type="button" id="btn-prev" class="btn btn-outline-secondary">Назад</button>
+      <button type="button" id="btn-next" class="btn btn-primary">Далее</button>
+    </div>
+    <div id="err" class="text-danger mt-2"></div>
+  </div>
+</div>
+
+<div id="quiz-toast-host" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+const API = '{{ api_base }}';
+const SESSION_ID = '{{ session_id }}';
+
+const INSIGHT_AFTER_Q6 = 'По вашим ответам уже видно: часть процессов работает нестабильно. Это нормально — большинство складов через это проходят. Продолжим — осталось ещё 14 вопросов.';
+const INSIGHT_AFTER_Q15 = 'Уже выявлены зоны риска в точности и управляемости вашего склада. Последний блок — самый важный';
+const Q5_PRELUDE = 'Это критический уровень. Уточним детали.';
+
+let rawQuestions = [];
+let byNumber = {};
+let sessionAnswers = {};
+let flow = [];
+let step = 0;
+const TOAST_MS = 3000;
+let isTransitioning = false;
+
+async function loadQuestions() {
+  const r = await fetch(API + '/questions/self/');
+  if (!r.ok) throw new Error(await r.text());
+  rawQuestions = await r.json();
+  byNumber = {};
+  rawQuestions.forEach(q => { byNumber[q.number] = q; });
+}
+
+async function loadSession() {
+  const r = await fetch(API + '/sessions/' + SESSION_ID + '/');
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function answersMapFromSession(sess) {
+  const m = {};
+  (sess.answers || []).forEach(a => { m[a.question_code] = a; });
+  return m;
+}
+
+function needBranchQ21(ansMap) {
+  const a = ansMap['q8'];
+  return a && a.option_id === 'q8_opt3';
+}
+
+function buildFlow(ansMap) {
+  const need21 = needBranchQ21(ansMap);
+  const nums = [];
+  for (let n = 1; n <= 20; n++) {
+    nums.push(n);
+    if (n === 8 && need21) nums.push(21);
+  }
+  return nums.map(n => byNumber[n]).filter(Boolean);
+}
+
+function stageLabel(num) {
+  if (num <= 3) return 'Базовая картина';
+  if (num <= 10 || num === 21) return 'Выявляем слабые места';
+  if (num <= 17) return 'Проверяем управляемость';
+  return 'Формулируем главное';
+}
+
+function currentQuestion() {
+  return flow[step];
+}
+
+function findInitialStep(ansMap) {
+  for (let i = 0; i < flow.length; i++) {
+    const q = flow[i];
+    if (q.number === 20) {
+      const t = (ansMap['q20'] && ansMap['q20'].open_answer_text || '').trim();
+      if (!t) return i;
+    } else {
+      if (!ansMap[q.code] || !ansMap[q.code].option_id) return i;
+    }
+  }
+  return flow.length - 1;
+}
+
+function updateProgress() {
+  const q = currentQuestion();
+  if (!q) return;
+  const total = flow.length;
+  const cur = step + 1;
+  const pct = total ? Math.round((cur / total) * 100) : 0;
+  document.getElementById('quiz-progress-fill').style.width = pct + '%';
+  document.getElementById('quiz-stage').textContent =
+    'Шаг ' + cur + ' из ' + total + ' — ' + stageLabel(q.number);
+}
+
+function render() {
+  const q = currentQuestion();
+  if (!q) return;
+  document.getElementById('q-title').textContent = q.text;
+  document.getElementById('q-hint').textContent = q.check_note || q.hint || '';
+  const opts = document.getElementById('opts');
+  opts.innerHTML = '';
+  const openWrap = document.getElementById('open-wrap');
+  const prelude = document.getElementById('q5-prelude');
+  document.getElementById('err').textContent = '';
+
+  const a5 = sessionAnswers['q5'];
+  if (q.number === 6 && a5 && a5.option_id === 'q5_opt4') {
+    prelude.textContent = Q5_PRELUDE;
+    prelude.classList.remove('d-none');
+  } else {
+    prelude.classList.add('d-none');
+  }
+
+  if (q.number === 20) {
+    openWrap.classList.remove('d-none');
+    document.getElementById('open-text').value =
+      (sessionAnswers['q20'] && sessionAnswers['q20'].open_answer_text) || '';
+  } else {
+    openWrap.classList.add('d-none');
+    (q.options || []).forEach(o => {
+      const id = 'opt_' + o.code;
+      const div = document.createElement('div');
+      div.className = 'form-check';
+      div.innerHTML = `<input class="form-check-input" type="radio" name="opt" id="${id}" value="${o.code}">
+        <label class="form-check-label" for="${id}">${o.text}</label>`;
+      opts.appendChild(div);
+    });
+  }
+  document.getElementById('btn-prev').disabled = step === 0;
+  const isLast = step === flow.length - 1;
+  document.getElementById('btn-next').textContent = isLast ? 'Завершить' : 'Далее';
+  updateProgress();
+
+  if (q.number !== 20) {
+    const ans = sessionAnswers[q.code];
+    if (ans && ans.option_id) {
+      const el = document.querySelector(`input[name="opt"][value="${ans.option_id}"]`);
+      if (el) el.checked = true;
+    }
+  }
+}
+
+async function patchAnswer(payload) {
+  const r = await fetch(API + '/sessions/' + SESSION_ID + '/answers/', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error(t || r.statusText);
+  }
+  return r.json();
+}
+
+async function syncSession() {
+  const sess = await loadSession();
+  sessionAnswers = answersMapFromSession(sess);
+  flow = buildFlow(sessionAnswers);
+  step = Math.min(step, flow.length - 1);
+  if (step < 0) step = 0;
+  return sess;
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function showToast(text, type = 'feedback', ms = TOAST_MS) {
+  if (!text) return;
+  const host = document.getElementById('quiz-toast-host');
+  const el = document.createElement('div');
+  el.className = 'quiz-toast' + (type === 'insight' ? ' quiz-toast-insight' : '');
+  el.textContent = text;
+  host.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  await wait(ms);
+  el.classList.remove('show');
+  await wait(260);
+  el.remove();
+}
+
+function setNavDisabled(disabled) {
+  document.getElementById('btn-next').disabled = disabled;
+  document.getElementById('btn-prev').disabled = disabled || step === 0;
+}
+
+function findOption(q, code) {
+  return (q.options || []).find(o => o.code === code);
+}
+
+async function finishMcqChain(q, selectedCode) {
+  const opt = findOption(q, selectedCode);
+  const comment = (opt && opt.after_answer_comment || '').trim();
+  const insightText = q.number === 6 ? INSIGHT_AFTER_Q6 : (q.number === 15 ? INSIGHT_AFTER_Q15 : '');
+
+  if (comment) {
+    await showToast(comment, 'feedback');
+  }
+  if (insightText) {
+    await showToast(insightText, 'insight');
+  }
+  await doStepPlusOne();
+}
+
+async function doStepPlusOne() {
+  step += 1;
+  await syncSession();
+  render();
+}
+
+document.getElementById('btn-next').addEventListener('click', async () => {
+  if (isTransitioning) return;
+  isTransitioning = true;
+  setNavDisabled(true);
+  const q = currentQuestion();
+  document.getElementById('err').textContent = '';
+  try {
+    if (q.number === 20) {
+      const text = document.getElementById('open-text').value.trim();
+      if (!text) {
+        document.getElementById('err').textContent = 'Заполните ответ.';
+        return;
+      }
+      await patchAnswer({ question_code: q.code, open_answer_text: text });
+      await syncSession();
+      const note = (q.check_note || '').trim();
+      if (note) {
+        await showToast(note, 'feedback');
+      }
+      window.location.href = '/audit/' + SESSION_ID + '/contact/';
+      return;
+    }
+    const sel = document.querySelector('input[name="opt"]:checked');
+    if (!sel) {
+      document.getElementById('err').textContent = 'Выберите вариант.';
+      return;
+    }
+    await patchAnswer({ question_code: q.code, option_id: sel.value });
+    await finishMcqChain(q, sel.value);
+  } catch (e) {
+    document.getElementById('err').textContent = e.message || String(e);
+  } finally {
+    isTransitioning = false;
+    setNavDisabled(false);
+  }
+});
+
+document.getElementById('btn-prev').addEventListener('click', async () => {
+  if (step > 0) {
+    step -= 1;
+    await syncSession();
+    render();
+  }
+});
+
+(async () => {
+  try {
+    await loadQuestions();
+    const sess = await loadSession();
+    sessionAnswers = answersMapFromSession(sess);
+    flow = buildFlow(sessionAnswers);
+    step = findInitialStep(sessionAnswers);
+    document.getElementById('loading').classList.add('d-none');
+    document.getElementById('panel').classList.remove('d-none');
+    render();
+  } catch (e) {
+    document.getElementById('loading').textContent = 'Ошибка: ' + (e.message || e);
+  }
+})();
+</script>
+{% endblock %}

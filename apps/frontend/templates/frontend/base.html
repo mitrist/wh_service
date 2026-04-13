@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Складской аудит{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <style>
+    :root {
+      --landing-primary: #1E3A5F;
+      --landing-accent: #E67E22;
+      --landing-bg: #f5f7fa;
+    }
+    .app-top-header { background: #fff; border-bottom: 1px solid rgba(30, 58, 95, 0.12); }
+    .app-logo {
+      max-height: 48px;
+      width: auto;
+      object-fit: contain;
+      vertical-align: middle;
+    }
+    .app-main-wrap { min-height: calc(100vh - 72px); }
+    .offcanvas-nav .nav-link { border-radius: .375rem; }
+    .offcanvas-nav .nav-link:hover { background: #f8f9fa; }
+    .btn-landing-primary {
+      --bs-btn-bg: var(--landing-primary);
+      --bs-btn-border-color: var(--landing-primary);
+      --bs-btn-hover-bg: #152d4a;
+      --bs-btn-hover-border-color: #152d4a;
+      --bs-btn-color: #fff;
+      --bs-btn-hover-color: #fff;
+    }
+    .btn-landing-accent {
+      --bs-btn-bg: var(--landing-accent);
+      --bs-btn-border-color: var(--landing-accent);
+      --bs-btn-hover-bg: #cf6e1d;
+      --bs-btn-hover-border-color: #cf6e1d;
+      --bs-btn-color: #fff;
+      --bs-btn-hover-color: #fff;
+    }
+    .text-landing-primary { color: var(--landing-primary) !important; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-light">
+  <header class="app-top-header shadow-sm">
+    <div class="container-fluid d-flex align-items-center py-2 px-3 gap-2 flex-wrap">
+      <button
+        class="btn btn-outline-secondary d-flex align-items-center justify-content-center flex-shrink-0"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#sidebarMenu"
+        aria-controls="sidebarMenu"
+        aria-label="Открыть меню"
+        style="width:2.5rem;height:2.5rem;"
+      >
+        <i class="bi bi-list fs-4"></i>
+      </button>
+      <a href="{% url 'frontend_home' %}" class="d-flex align-items-center text-decoration-none me-auto">
+        <img src="{% static 'frontend/logo.png' %}" alt="Райтек" class="app-logo">
+      </a>
+      <div class="d-flex align-items-center gap-2 ms-auto">
+        {% block header_actions %}
+        <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-landing-primary">Найти точки потерь →</button>
+        </form>
+        {% endblock %}
+      </div>
+    </div>
+  </header>
+
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title d-flex align-items-center gap-2" id="sidebarMenuLabel">
+        <i class="bi bi-graph-up-arrow text-landing-primary fs-4" aria-hidden="true"></i>
+        <span>Самоаудит склада</span>
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
+    </div>
+    <div class="offcanvas-body offcanvas-nav">
+      <nav class="nav flex-column gap-1">
+        <a class="nav-link text-dark" href="{% url 'frontend_home' %}">
+          <i class="bi bi-house-door me-2"></i>Главная
+        </a>
+        <form method="post" action="{% url 'frontend_audit_begin' %}" class="m-0">
+          {% csrf_token %}
+          <button type="submit" class="nav-link text-dark border-0 bg-transparent text-start w-100">
+            <i class="bi bi-geo-alt me-2"></i>Найти точки потерь
+          </button>
+        </form>
+      </nav>
+      <p class="small text-muted mt-4 mb-0">Сохраняйте ссылку на анкету, чтобы продолжить позже.</p>
+    </div>
+  </div>
+
+  <main class="app-main-wrap">
+    {% block main_container %}
+    <div class="container py-4 pb-5">
+      {% block content %}{% endblock %}
+    </div>
+    {% endblock %}
+  </main>
+
+  {% block site_footer %}{% endblock %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

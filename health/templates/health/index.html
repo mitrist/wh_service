@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Здоровье логистики — WMS Demo{% endblock %}
+{% block breadcrumbs %}
+<a href="{% url 'dashboard_index' %}">Главная</a>
+<span class="breadcrumbs-sep">/</span>
+<span>Здоровье логистики</span>
+{% endblock %}
+
+{% block content %}
+<header class="page-header mb-4">
+    <h1 class="page-title">Здоровье логистики</h1>
+    <p class="page-description mb-0">Самодиагностика и будущие рекомендации по логистике.</p>
+</header>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-8">
+        {% if screen == 'select' %}
+            <div class="card dashboard-panel mb-4">
+                <div class="card-body">
+                    <h2 class="card-title h6 mb-3">Выберите раздел</h2>
+                    <div class="d-grid gap-3">
+                        <div class="p-3 border rounded">
+                            <div class="fw-semibold mb-1">Самодиагностика — индекс здоровья склада</div>
+                            <div class="small text-muted">20 вопросов, после заполнения — расчёт индекса и сводка по 4 критериям.</div>
+                            <div class="mt-3">
+                                <a class="btn btn-primary" href="{% url 'health_index' %}?mode=self&step=1">
+                                    Начать самодиагностику
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="card dashboard-panel mb-4">
+                <div class="card-body">
+                    <h2 class="card-title h6 mb-3">Самодиагностика</h2>
+
+                    {% if error %}
+                        <div class="alert alert-danger mb-3">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="mode" value="self">
+                        <input type="hidden" name="step" value="{{ step }}">
+
+                        <div class="mb-3 health-question-anim">
+                            <div class="fw-semibold">{{ question.title }}</div>
+                            <div class="small text-muted mt-1">{{ question.check_note }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-muted mb-1">Прогресс: {{ step }}/{{ total_steps }}</div>
+                            <div class="health-progress-line" role="progressbar" aria-label="Прогресс опроса" aria-valuemin="1" aria-valuemax="{{ total_steps }}" aria-valuenow="{{ step }}">
+                                <div
+                                    class="health-progress-line__fill"
+                                    style="width: {% widthratio step total_steps 100 %}%"
+                                ></div>
+                            </div>
+                        </div>
+
+                        {% if question.options %}
+                            <div class="mt-2">
+                                {% for opt in question.options %}
+                                    <div class="form-check">
+                                        <input
+                                            class="form-check-input"
+                                            type="radio"
+                                            name="q{{ question.number }}"
+                                            id="q{{ question.number }}_{{ opt.option_id }}"
+                                            value="{{ opt.option_id }}"
+                                            {% if selected_option_id == opt.option_id %}checked{% endif %}
+                                        >
+                                        <label class="form-check-label" for="q{{ question.number }}_{{ opt.option_id }}">
+                                            {{ opt.label }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="mt-2">
+                                <textarea
+                                    class="form-control"
+                                    name="q20_text"
+                                    rows="3"
+                                    placeholder="Например: «Сделать нормальную навигацию — сократить время поиска»"
+                                >{% if selected_q20_text %}{{ selected_q20_text }}{% endif %}</textarea>
+                            </div>
+                        {% endif %}
+
+                        <style>
+                            @keyframes healthQuestionIn {
+                                from { opacity: 0; transform: translateY(10px); }
+                                to { opacity: 1; transform: translateY(0); }
+                            }
+                            .health-question-anim {
+                                animation: healthQuestionIn 260ms ease-out both;
+                            }
+                            .health-progress-line {
+                                width: 100%;
+                                height: 4px;
+                                background: var(--bs-border-color, #dee2e6);
+                                border-radius: 999px;
+                                overflow: hidden;
+                            }
+                            .health-progress-line__fill {
+                                height: 100%;
+                                background: var(--bs-primary, #0d6efd);
+                                border-radius: 999px;
+                                transition: width 220ms ease;
+                            }
+                        </style>
+
+                        <div class="d-grid gap-2 mt-4">
+                            {% if step < total_steps %}
+                                <button type="submit" name="action" value="next" class="btn btn-primary">
+                                    Далее
+                                </button>
+                            {% else %}
+                                <button type="submit" name="action" value="finish" class="btn btn-primary">
+                                    Получить результат
+                                </button>
+                            {% endif %}
+
+                            <button
+                                type="submit"
+                                name="action"
+                                value="back"
+                                class="btn btn-outline-secondary"
+                                {% if step == 1 %}disabled{% endif %}
+                            >
+                                Вернуться назад
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <div class="card dashboard-panel">
+            <div class="card-body">
+                <h2 class="card-title h6">Как считается индекс</h2>
+                <p class="card-text small text-muted mb-0">
+                    Каждый ответ переводится в балл (процент). Итог = средневзвешенное по весам вопросов. «Критические» ошибки влияют сильнее.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

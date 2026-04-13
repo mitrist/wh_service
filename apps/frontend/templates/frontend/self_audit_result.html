@@ -1,0 +1,257 @@
+{% extends "frontend/base.html" %}
+{% block title %}Результат{% endblock %}
+{% block extra_head %}
+<style>
+  .report-wrap { max-width: 52rem; }
+  .report-card { border: 1px solid rgba(30, 58, 95, 0.12); border-radius: 0.65rem; background: #fff; }
+  .report-title { color: var(--landing-primary); }
+  .disc { border-left: 3px solid #dc3545; background: rgba(220,53,69,0.05); padding: 0.7rem 0.9rem; border-radius: 0.3rem; }
+  .zone-chip { font-size: 0.85rem; padding: 0.2rem 0.45rem; border-radius: 99px; background: rgba(30, 58, 95, 0.08); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="mx-auto report-wrap">
+  <div id="box" class="card card-body shadow-sm report-card">
+    <p id="msg" class="mb-0">Формируем отчет…</p>
+    <div id="result-panel" class="d-none mt-3">
+      <section class="mb-4">
+        <h1 class="h4 mb-1 report-title">Отчёт по самоаудиту склада</h1>
+        <p class="small text-muted mb-1"><strong id="hdr-company"></strong> · <span id="hdr-date"></span></p>
+        <p class="small text-muted mb-2" id="hdr-method"></p>
+        <div id="hdr-disclaimers"></div>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5 report-title">1. Общий индекс здоровья склада</h2>
+        <div class="d-flex align-items-end gap-2 mb-2">
+          <span class="display-6 fw-bold" id="score-val">—</span>
+          <span class="text-muted mb-2">%</span>
+          <span id="index-zone" class="zone-chip mb-2"></span>
+        </div>
+        <p class="small text-muted mb-2" id="index-desc"></p>
+        <p class="small mb-0" id="index-formula"></p>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5 report-title">2. Ваши показатели по 4 критериям</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>Критерий</th><th>Балл</th><th>Оценка</th><th>Что измерялось</th>
+              </tr>
+            </thead>
+            <tbody id="criteria-rows"></tbody>
+          </table>
+        </div>
+        <p class="small text-muted mb-0" id="criteria-note"></p>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5 report-title">3. Ваши три главные точки потерь</h2>
+        <div id="top-points"></div>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5 report-title">4. Где вы относительно рынка</h2>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr><th>Показатель</th><th>Слабый склад</th><th>Средний</th><th>Хорошо</th><th>Ваш результат</th></tr>
+            </thead>
+            <tbody id="bench-rows"></tbody>
+          </table>
+        </div>
+        <p class="small text-muted mb-0" id="bench-note"></p>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5 report-title">5. Где обычно прячутся деньги — карта потерь</h2>
+        <ul id="loss-map" class="small"></ul>
+        <p class="small text-muted mb-0" id="loss-note"></p>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5 report-title">6. Быстрые победы</h2>
+        <p class="small mb-2"><strong>Ваш ответ:</strong> <span id="quick-q20">—</span></p>
+        <ul class="small mb-2">
+          <li id="quick-personal"></li>
+          <li id="quick-yellow"></li>
+          <li id="quick-universal"></li>
+        </ul>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5 report-title">7. Что дальше — три честных пути</h2>
+        <div id="next-steps"></div>
+      </section>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <a id="pdf" class="btn btn-outline-primary d-none" href="#">Скачать PDF</a>
+        <a id="resume-quiz" class="btn btn-landing-primary d-none" href="#">Продолжить квиз</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const API = '{{ api_base }}';
+const SESSION_ID = '{{ session_id }}';
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function zoneClass(grade) {
+  if (grade === 'green') return 'bg-success';
+  if (grade === 'yellow') return 'bg-warning text-dark';
+  if (grade === 'orange') return 'bg-warning text-dark';
+  return 'bg-danger';
+}
+
+function zoneLabel(grade) {
+  if (grade === 'green') return 'Норма / точки роста';
+  if (grade === 'yellow') return 'Системные риски';
+  if (grade === 'orange') return 'Системные проблемы';
+  return 'Критично';
+}
+
+function fillResult(data, fullReport) {
+  document.getElementById('result-panel').classList.remove('d-none');
+  document.getElementById('score-val').textContent = data.total_score;
+  document.getElementById('index-zone').textContent = zoneLabel(data.grade);
+  document.getElementById('index-zone').className = 'zone-chip mb-2 ' + zoneClass(data.grade);
+
+  const hdr = fullReport.header || {};
+  document.getElementById('hdr-company').textContent = hdr.company || 'Компания';
+  document.getElementById('hdr-date').textContent = hdr.date || '';
+  document.getElementById('hdr-method').textContent = hdr.method || '';
+  const dWrap = document.getElementById('hdr-disclaimers');
+  dWrap.innerHTML = '';
+  (hdr.disclaimer || []).forEach(t => {
+    const p = document.createElement('p');
+    p.className = 'disc small mb-2';
+    p.textContent = t;
+    dWrap.appendChild(p);
+  });
+
+  const overall = fullReport.overall_index || {};
+  document.getElementById('index-desc').textContent = overall.description || '';
+  document.getElementById('index-formula').textContent = overall.formula_note || '';
+
+  const cBody = document.getElementById('criteria-rows');
+  cBody.innerHTML = '';
+  ((fullReport.criteria || {}).rows || []).forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml((r.emoji || '') + ' ' + (r.title || ''))}</td>
+      <td>${escapeHtml(String(r.score_percent || 0))}%</td>
+      <td>${escapeHtml(r.zone_label || '')}</td>
+      <td>${escapeHtml(r.measured || '')}</td>`;
+    cBody.appendChild(tr);
+  });
+  document.getElementById('criteria-note').textContent = ((fullReport.criteria || {}).read_note || '');
+
+  const tp = document.getElementById('top-points');
+  tp.innerHTML = '';
+  (fullReport.top_loss_points || []).forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'report-card p-3 mb-3';
+    card.innerHTML = `
+      <p class="mb-1"><strong>Проблема ${p.rank}: ${escapeHtml(p.title || '')}</strong></p>
+      <p class="small mb-1"><strong>Ваш ответ:</strong> ${escapeHtml(p.selected_answer || '')}</p>
+      <p class="small mb-1"><strong>Норма рынка:</strong> ${escapeHtml(p.market_norm || '')}</p>
+      <p class="small mb-1"><strong>Разрыв:</strong> ${escapeHtml(p.gap || '')}</p>
+      <p class="small mb-1"><strong>Почему это дорого:</strong> ${escapeHtml(p.why_costly || '')}</p>
+      <p class="small mb-1"><strong>Что проверить:</strong></p>
+      <ul class="small mb-1">${(p.check_now || []).map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
+      <p class="small mb-0"><strong>Быстрое решение:</strong> ${escapeHtml(p.quick_solution || '')}</p>`;
+    tp.appendChild(card);
+  });
+
+  const bRows = document.getElementById('bench-rows');
+  bRows.innerHTML = '';
+  (((fullReport.market_benchmarks || {}).rows) || []).forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(r.title || '')}</td>
+      <td>${escapeHtml(r.weak || '')}</td>
+      <td>${escapeHtml(r.average || '')}</td>
+      <td>${escapeHtml(r.good || '')}</td>
+      <td>${escapeHtml(r.your_result || '')}</td>`;
+    bRows.appendChild(tr);
+  });
+  document.getElementById('bench-note').textContent = (fullReport.market_benchmarks || {}).note || '';
+
+  const lMap = document.getElementById('loss-map');
+  lMap.innerHTML = '';
+  (((fullReport.loss_map || {}).items) || []).forEach(i => {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${escapeHtml(i.title || '')}</strong> — ${escapeHtml(i.description || '')}`;
+    lMap.appendChild(li);
+  });
+  document.getElementById('loss-note').textContent = (fullReport.loss_map || {}).note || '';
+
+  const qWins = fullReport.quick_wins || {};
+  document.getElementById('quick-q20').textContent = qWins.from_q20 || '—';
+  document.getElementById('quick-personal').textContent = qWins.personal_recommendation || '';
+  document.getElementById('quick-yellow').textContent = qWins.yellow_zone_tip || '';
+  document.getElementById('quick-universal').textContent = qWins.universal_tip || '';
+
+  const next = document.getElementById('next-steps');
+  next.innerHTML = '';
+  const highlight = (fullReport.next_steps || {}).highlight || '';
+  (((fullReport.next_steps || {}).paths) || []).forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'report-card p-3 mb-2';
+    if (p.code === highlight) el.className += ' border-primary';
+    el.innerHTML = `<p class="mb-1"><strong>${escapeHtml(p.title || '')}</strong></p>
+      <p class="small mb-0">${escapeHtml(p.description || '')}</p>`;
+    next.appendChild(el);
+  });
+}
+
+async function complete() {
+  const r = await fetch(API + '/sessions/' + SESSION_ID + '/complete/', { method: 'POST' });
+  const txt = await r.text();
+  if (!r.ok) {
+    let detail = txt || r.statusText;
+    try {
+      const parsed = JSON.parse(txt);
+      detail = parsed.detail || detail;
+    } catch (e) {}
+    const resumeBtn = document.getElementById('resume-quiz');
+    if (detail.includes('Missing required answer for q')) {
+      document.getElementById('msg').textContent = 'Сессия заполнена не полностью. Вернитесь в квиз и завершите пропущенные вопросы.';
+      resumeBtn.classList.remove('d-none');
+      resumeBtn.href = '/audit/' + SESSION_ID + '/';
+    } else {
+      document.getElementById('msg').textContent = detail;
+    }
+    return;
+  }
+  const data = JSON.parse(txt);
+  document.getElementById('msg').textContent = data.message || 'Готово.';
+  if (data.result) fillResult(data.result, data.result.full_report || {});
+  const pdf = document.getElementById('pdf');
+  pdf.classList.remove('d-none');
+  pdf.href = API + '/sessions/' + SESSION_ID + '/report/';
+}
+
+(async () => {
+  const s = await fetch(API + '/sessions/' + SESSION_ID + '/');
+  if (!s.ok) {
+    document.getElementById('msg').textContent = await s.text();
+    return;
+  }
+  const sess = await s.json();
+  if (sess.status === 'completed') {
+    document.getElementById('msg').textContent = 'Сессия уже завершена. Откройте PDF отчет.';
+    const pdf = document.getElementById('pdf');
+    pdf.classList.remove('d-none');
+    pdf.href = API + '/sessions/' + SESSION_ID + '/report/';
+    return;
+  }
+  await complete();
+})();
+</script>
+{% endblock %}

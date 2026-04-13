@@ -1,0 +1,51 @@
+{% extends "frontend/base.html" %}
+{% block title %}Показать результат{% endblock %}
+{% block content %}
+<div class="mx-auto" style="max-width: 28rem;">
+  <h1 class="h4 mb-3">Мы уже проанализировали ваши ответы и нашли несколько зон риска.</h1>
+  <p class="text-secondary mb-4">Остался один шаг — и вы увидите свои три главные точки потерь.</p>
+  <p class="small text-muted mb-3">Ссылка на сессию (сохраните): <code class="user-select-all">{{ session_id }}</code></p>
+
+  <form id="contact-form" class="card card-body shadow-sm">
+    <div class="mb-3">
+      <label class="form-label">Ваша рабочая почта *</label>
+      <input type="email" class="form-control" name="client_email" required autocomplete="email" placeholder="email@компания.ru">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Имя</label>
+      <input type="text" class="form-control" name="client_name" autocomplete="name">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Компания</label>
+      <input type="text" class="form-control" name="client_company" autocomplete="organization">
+    </div>
+    <button type="submit" class="btn btn-landing-accent w-100">Показать результат →</button>
+    <p class="small text-muted mt-3 mb-0">Мы не продаём email. Только ваш отчёт.</p>
+    <div id="err" class="text-danger small mt-2"></div>
+  </form>
+</div>
+<script>
+const API = '{{ api_base }}';
+const SESSION_ID = '{{ session_id }}';
+document.getElementById('contact-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = {
+    client_email: (fd.get('client_email') || '').trim(),
+    client_name: (fd.get('client_name') || '').trim(),
+    client_company: (fd.get('client_company') || '').trim(),
+  };
+  document.getElementById('err').textContent = '';
+  const r = await fetch(API + '/sessions/' + SESSION_ID + '/', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    document.getElementById('err').textContent = await r.text();
+    return;
+  }
+  window.location.href = '/audit/' + SESSION_ID + '/result/';
+});
+</script>
+{% endblock %}

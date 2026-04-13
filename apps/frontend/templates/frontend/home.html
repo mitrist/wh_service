@@ -1,0 +1,286 @@
+{% extends "frontend/base.html" %}
+{% block title %}Точки потерь на складе{% endblock %}
+
+{% block extra_head %}
+<style>
+  .landing-hero {
+    background: linear-gradient(165deg, #eef2f7 0%, #fff 60%);
+    border-bottom: 1px solid rgba(30, 58, 95, 0.08);
+  }
+  .landing-section { padding: 3.5rem 1.25rem; }
+  @media (min-width: 768px) {
+    .landing-section { padding: 4rem 2rem; }
+  }
+  .landing-section-alt { background: #fff; }
+  .landing-kicker { letter-spacing: 0.06em; font-size: 0.75rem; font-weight: 600; color: var(--landing-primary); text-transform: uppercase; }
+  .landing-example-box {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    background: #1a1d23;
+    color: #e8eaed;
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.25rem;
+    white-space: pre-wrap;
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .loss-card {
+    border: 1px solid rgba(30, 58, 95, 0.15);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.35rem;
+    background: #fff;
+  }
+  .loss-card__title {
+    color: var(--landing-primary);
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 0.65rem;
+  }
+  .loss-card__body {
+    color: #495057;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0.65rem;
+  }
+  .loss-card__arrow {
+    color: #2c5282;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-bottom: 0;
+    padding-top: 0.35rem;
+    border-top: 1px dashed rgba(30, 58, 95, 0.2);
+  }
+  .loss-closing {
+    background: rgba(30, 58, 95, 0.06);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.35rem;
+    border-left: 4px solid var(--landing-primary);
+  }
+  .micro-facts { font-size: 0.9rem; color: #5c6570; border-left: 3px solid var(--landing-accent); padding-left: 1rem; }
+  .site-footer-landing { background: var(--landing-primary); color: rgba(255,255,255,0.88); padding: 2.5rem 1.25rem; }
+  .site-footer-landing a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+  .compare-simple th { width: 34%; }
+</style>
+{% endblock %}
+
+{% block main_container %}
+
+{# БЛОК 1. HERO #}
+<section class="landing-hero landing-section">
+  <div class="container" style="max-width: 48rem;">
+    <h1 class="display-6 fw-bold text-landing-primary mb-4" style="line-height: 1.2;">
+      Вы теряете деньги на складе — просто не видите где
+    </h1>
+    <p class="lead text-secondary mb-4">
+      Самоаудит за 15 минут покажет слабые зоны склада: точность, скорость, запасы и управляемость — и выделит 3 главные точки потерь.
+    </p>
+    <p class="text-secondary mb-4">Без сложных расчётов и без выезда консультанта.</p>
+    <ul class="list-unstyled text-secondary mb-4">
+      <li class="mb-2">→ Поймёте, где теряются деньги и время</li>
+      <li class="mb-2">→ Получите топ-3 проблем</li>
+      <li class="mb-2">→ Увидите, что можно исправить уже завтра</li>
+    </ul>
+    <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-lg btn-landing-accent px-4 py-3">Найти свои точки потерь →</button>
+    </form>
+    <p class="small text-muted mt-3 mb-4">Бесплатно. Без звонков. Результат — сразу.</p>
+    <div class="micro-facts py-2">
+      <p class="mb-2"><strong class="text-dark">По опыту аудитов:</strong></p>
+      <p class="mb-1">— у большинства складов есть ошибки учёта</p>
+      <p class="mb-1">— каждый второй склад отгружает с ошибками</p>
+      <p class="mb-2">— неликвиды съедают до 20–30% площади</p>
+      <p class="mb-0 fst-italic">Проверьте, где вы.</p>
+    </div>
+  </div>
+</section>
+
+{# БЛОК 2. 5 ТИПОВ (main3.md) #}
+<section class="landing-section landing-section-alt">
+  <div class="container" style="max-width: 40rem;">
+    <h2 class="h3 text-landing-primary mb-3">Где на складе обычно теряются деньги</h2>
+    <p class="text-secondary mb-2">Это не теория — это типовые сценарии, которые мы видим на аудитах.</p>
+    <p class="text-secondary mb-4">Скорее всего, часть из них уже происходит у вас.</p>
+
+    <div class="row g-4 mb-4">
+      <div class="col-12">
+        <div class="loss-card">
+          <div class="loss-card__title">📦 Ошибки учёта и пересорт</div>
+          <p class="loss-card__body mb-0">Отгрузили не тот товар. Или «потеряли», а потом нашли через месяц.</p>
+          <p class="loss-card__arrow mb-0">→ Прямые убытки + недовольный клиент</p>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="loss-card">
+          <div class="loss-card__title">⏸️ Простои из-за склада</div>
+          <p class="loss-card__body mb-0">Производство или отгрузка ждёт: товар есть, но его не могут найти или собрать вовремя.</p>
+          <p class="loss-card__arrow mb-0">→ Вы платите за простой, а не за результат</p>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="loss-card">
+          <div class="loss-card__title">💰 Замороженный капитал (неликвид)</div>
+          <p class="loss-card__body mb-0">Товар лежит месяцами и занимает место.</p>
+          <p class="loss-card__arrow mb-0">→ Деньги не работают, склад забивается</p>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="loss-card">
+          <div class="loss-card__title">📄 Возвраты и доработки</div>
+          <p class="loss-card__body mb-0">Ошибки, брак, несоответствия → возврат → повторная обработка.</p>
+          <p class="loss-card__arrow mb-0">→ Двойные операции и потерянная маржа</p>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="loss-card">
+          <div class="loss-card__title">🕒 Потери внутри процессов</div>
+          <p class="loss-card__body mb-0">Кладовщики ищут товар, ходят за бумажками, ждут задания.</p>
+          <p class="loss-card__arrow mb-0">→ Зарплата платится, работа — нет</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="loss-closing mb-4">
+      <p class="mb-2 fw-semibold text-landing-primary">Вы не видите это в отчётах.</p>
+      <p class="text-secondary mb-2 mb-md-3">Но это уже влияет на деньги, сроки и клиентов.</p>
+      <p class="text-secondary small mb-0">Самоаудит проверит каждую из этих зон и покажет, где у вас основной разрыв.</p>
+    </div>
+
+    <p class="fw-semibold text-landing-primary mb-3">Если хотя бы 2 пункта знакомы — потери уже системные</p>
+    <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-landing-primary">Проверить свой склад →</button>
+    </form>
+  </div>
+</section>
+
+{# БЛОК 3 #}
+<section class="landing-section">
+  <div class="container" style="max-width: 42rem;">
+    <h2 class="h3 text-landing-primary mb-4">Что вы получите</h2>
+    <ul class="list-unstyled text-secondary mb-4">
+      <li class="mb-2">→ 3 главные проблемы</li>
+      <li class="mb-2">→ зоны риска</li>
+      <li class="mb-2">→ рекомендации</li>
+      <li class="mb-2">→ 1 быстрое улучшение</li>
+    </ul>
+    <p class="text-secondary mb-4"><strong class="text-dark">Чего не будет:</strong><br>— точных рублей — полного решения</p>
+    <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-landing-accent">Посмотреть свои зоны риска →</button>
+    </form>
+  </div>
+</section>
+
+{# БЛОК 4. СРАВНЕНИЕ #}
+<section class="landing-section landing-section-alt">
+  <div class="container" style="max-width: 52rem;">
+    <h2 class="h3 text-landing-primary mb-4">Самоаудит vs полный аудит</h2>
+    <div class="table-responsive">
+      <table class="table table-bordered compare-simple small">
+        <thead class="table-light">
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">Самоаудит</th>
+            <th scope="col">Полный аудит</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Суть</th>
+            <td>Зоны риска, топ-3, направления</td>
+            <td>Рубли, окупаемость, хронометраж</td>
+          </tr>
+          <tr>
+            <th scope="row">Время</th>
+            <td>~15 минут</td>
+            <td>1–3 дня на объекте</td>
+          </tr>
+          <tr>
+            <th scope="row">Стоимость</th>
+            <td>Бесплатно</td>
+            <td>Платно</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-secondary small mb-0 mt-3"><strong>Вывод:</strong> начните с самоаудита, чтобы понять — есть ли проблема.</p>
+  </div>
+</section>
+
+{# БЛОК 5. ПРИМЕР #}
+<section class="landing-section">
+  <div class="container text-center" style="max-width: 44rem;">
+    <p class="landing-kicker mb-2">Пример</p>
+    <h2 class="h4 text-landing-primary mb-2">Вы получите не цифру, а точки потерь</h2>
+    <div class="landing-example-box text-start mt-4">
+┌─────────────────────────────────────────────────────────────┐
+│  ВАШИ ГЛАВНЫЕ ТОЧКИ ПОТЕРЬ (по версии опросника)             │
+├─────────────────────────────────────────────────────────────┤
+│  1. Повреждения товара → ответ: каждую неделю                │
+│  2. Ошибки отгрузки → ответ: 3–5 раз в месяц                 │
+│  3. Неликвид → ответ: 10–30% площади                         │
+├─────────────────────────────────────────────────────────────┤
+│  ⚠️ Без точных рублей — но ясно, куда копать.               │
+└─────────────────────────────────────────────────────────────┘
+    </div>
+    <form method="post" action="{% url 'frontend_audit_begin' %}" class="mt-4">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-landing-primary btn-lg">Получить такой же разбор →</button>
+    </form>
+  </div>
+</section>
+
+{# БЛОК 6 #}
+<section class="landing-section landing-section-alt">
+  <div class="container" style="max-width: 40rem;">
+    <h2 class="h3 text-landing-primary mb-3">Для кого</h2>
+    <p class="text-secondary mb-0">Руководители производства, операционные и коммерческие директора, собственники — всем, кто отвечает за деньги и скорость на складе.</p>
+  </div>
+</section>
+
+{# БЛОК 7. АВТОР (main3.md) #}
+<section class="landing-section">
+  <div class="container" style="max-width: 40rem;">
+    <h2 class="h3 text-landing-primary mb-4">За 15 лет нашли потери на складах:</h2>
+    <ul class="list-unstyled text-secondary mb-4">
+      <li class="mb-2">— производственных предприятий</li>
+      <li class="mb-2">— дистрибуции</li>
+      <li class="mb-2">— e-commerce</li>
+    </ul>
+    <p class="mb-1 fw-semibold text-landing-primary">Типовой результат:</p>
+    <p class="text-secondary mb-0">снижение потерь на <strong class="text-dark">15–30%</strong></p>
+  </div>
+</section>
+
+{# БЛОК 8. ФИНАЛ #}
+<section class="landing-section landing-section-alt text-center">
+  <div class="container" style="max-width: 36rem;">
+    <h2 class="h4 text-landing-primary mb-4">Готовы увидеть свои точки потерь?</h2>
+    <form method="post" action="{% url 'frontend_audit_begin' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-landing-accent btn-lg px-4 py-3">Пройти самоаудит →</button>
+    </form>
+    <p class="small text-muted mt-3 mb-0">Без звонков. Только результат.</p>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block site_footer %}
+<footer class="site-footer-landing">
+  <div class="container text-center small" style="max-width: 48rem;">
+    <p class="mb-2">© {% now "Y" %}. Сервис самоаудита склада.</p>
+    <p class="mb-3 opacity-75">Методика — по материалам вебинара «Считаем реальные потери склада».</p>
+    <p class="mb-0">
+      <a href="#">Политика конфиденциальности</a>
+      <span class="mx-2">·</span>
+      <a href="#">Контакты</a>
+      <span class="mx-2">·</span>
+      <a href="#">Заказать полный аудит</a>
+    </p>
+  </div>
+</footer>
+{% endblock %}

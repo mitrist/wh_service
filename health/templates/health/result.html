@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Результат самодиагностики — WMS Demo{% endblock %}
+
+{% block breadcrumbs %}
+<a href="{% url 'dashboard_index' %}">Главная</a>
+<span class="breadcrumbs-sep">/</span>
+<a href="{% url 'health_index' %}">Здоровье логистики</a>
+<span class="breadcrumbs-sep">/</span>
+<span>Результат</span>
+{% endblock %}
+
+{% block content %}
+<header class="page-header mb-4">
+    <h1 class="page-title">Результат самодиагностики склада</h1>
+    <p class="page-description mb-0">
+        {{ result.created_at|date:"d.m.Y" }}
+    </p>
+</header>
+
+<div class="row g-3">
+    <div class="col-12">
+        {# Блок 1: Общий индекс #}
+        <div class="card dashboard-panel mb-4">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <div class="text-muted mb-1">Общий индекс здоровья склада</div>
+                        <div class="display-6 fw-bold mb-1">
+                            {{ computed.overall_index }}%
+                        </div>
+                        <div class="small text-muted">
+                            {% if computed.overall_zone == 'green' %}
+                                Хорошо, но есть точки роста.
+                            {% elif computed.overall_zone == 'yellow' %}
+                                Системные проблемы. Требуются изменения.
+                            {% else %}
+                                Жёлто-красная зона. Требуется аудит.
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div>
+                        {% if computed.overall_zone == 'green' %}
+                            <span class="badge bg-success">Зелёная зона</span>
+                        {% elif computed.overall_zone == 'yellow' %}
+                            <span class="badge bg-warning text-dark">Жёлтая зона</span>
+                        {% else %}
+                            <span class="badge bg-danger">Красная зона</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Блок 2: 4 критерия #}
+        <div class="card dashboard-panel mb-4">
+            <div class="card-body">
+                <div class="h6 mb-3">Сводка по 4 критериям</div>
+                <div class="row g-3">
+                    {% with accuracy=computed.criteria.accuracy speed=computed.criteria.speed capacity=computed.criteria.capacity manageability=computed.criteria.manageability %}
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <div class="fw-semibold">Точность</div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">{{ accuracy.score_percent }}%</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 small text-muted">
+                                    {% if accuracy.zone == 'green' %}Хорошо{% elif accuracy.zone == 'yellow' %}Ниже среднего{% else %}Критично{% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    {% if accuracy.zone == 'green' %}
+                                        <div class="progress"><div class="progress-bar bg-success" style="width: {{ accuracy.score_percent }}%"></div></div>
+                                    {% elif accuracy.zone == 'yellow' %}
+                                        <div class="progress"><div class="progress-bar bg-warning text-dark" style="width: {{ accuracy.score_percent }}%"></div></div>
+                                    {% else %}
+                                        <div class="progress"><div class="progress-bar bg-danger" style="width: {{ accuracy.score_percent }}%"></div></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <div class="fw-semibold">Скорость</div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">{{ speed.score_percent }}%</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 small text-muted">
+                                    {% if speed.zone == 'green' %}Хорошо{% elif speed.zone == 'yellow' %}Ниже среднего{% else %}Критично{% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    {% if speed.zone == 'green' %}
+                                        <div class="progress"><div class="progress-bar bg-success" style="width: {{ speed.score_percent }}%"></div></div>
+                                    {% elif speed.zone == 'yellow' %}
+                                        <div class="progress"><div class="progress-bar bg-warning text-dark" style="width: {{ speed.score_percent }}%"></div></div>
+                                    {% else %}
+                                        <div class="progress"><div class="progress-bar bg-danger" style="width: {{ speed.score_percent }}%"></div></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <div class="fw-semibold">Ёмкость</div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">{{ capacity.score_percent }}%</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 small text-muted">
+                                    {% if capacity.zone == 'green' %}Хорошо{% elif capacity.zone == 'yellow' %}Ниже среднего{% else %}Критично{% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    {% if capacity.zone == 'green' %}
+                                        <div class="progress"><div class="progress-bar bg-success" style="width: {{ capacity.score_percent }}%"></div></div>
+                                    {% elif capacity.zone == 'yellow' %}
+                                        <div class="progress"><div class="progress-bar bg-warning text-dark" style="width: {{ capacity.score_percent }}%"></div></div>
+                                    {% else %}
+                                        <div class="progress"><div class="progress-bar bg-danger" style="width: {{ capacity.score_percent }}%"></div></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="p-3 border rounded">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <div class="fw-semibold">Управляемость</div>
+                                    <div class="text-end">
+                                        <div class="fw-bold">{{ manageability.score_percent }}%</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 small text-muted">
+                                    {% if manageability.zone == 'green' %}Хорошо{% elif manageability.zone == 'yellow' %}Ниже среднего{% else %}Критично{% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    {% if manageability.zone == 'green' %}
+                                        <div class="progress"><div class="progress-bar bg-success" style="width: {{ manageability.score_percent }}%"></div></div>
+                                    {% elif manageability.zone == 'yellow' %}
+                                        <div class="progress"><div class="progress-bar bg-warning text-dark" style="width: {{ manageability.score_percent }}%"></div></div>
+                                    {% else %}
+                                        <div class="progress"><div class="progress-bar bg-danger" style="width: {{ manageability.score_percent }}%"></div></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        {# Блок 3: Топ-3 разрыва #}
+        <div class="card dashboard-panel mb-4">
+            <div class="card-body">
+                <div class="h6 mb-3">Топ-3 критических разрыва</div>
+
+                {% for gap in computed.top_gaps %}
+                    <div class="mb-3">
+                        <div class="fw-semibold">
+                            {{ gap.title }} (вопрос {{ gap.question_number }}) — {{ gap.selected_label }}.
+                        </div>
+                        {% if gap.impact_text %}
+                            <div class="text-muted">{{ gap.impact_text }}</div>
+                        {% endif %}
+                        <div class="small text-muted">
+                            Что проверить: {{ gap.check_note }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Блок 4: Быстрые победы #}
+        <div class="card dashboard-panel border-warning mb-4">
+            <div class="card-body">
+                <div class="h6 mb-3">Быстрые победы</div>
+
+                <div class="text-muted mb-2">
+                    Вы сказали, что за 1 день бесплатно исправили бы:
+                </div>
+                <div class="mb-3">
+                    <blockquote class="blockquote mb-0">
+                        <p class="mb-0">{{ computed.quick_win_quote }}</p>
+                    </blockquote>
+                </div>
+
+                {% if 'поиск' in computed.quick_win_quote|lower or 'навигац' in computed.quick_win_quote|lower or 'адрес' in computed.quick_win_quote|lower %}
+                    <div class="small">
+                        <div class="fw-semibold">Рекомендация:</div>
+                        <div>Наклейка буквенно-цифровых адресов на торцы стеллажей + схема «вы — здесь» в каждой зоне.</div>
+                        <div class="text-muted mt-2">Стоимость: 5–10 тыс. руб. Эффект: сокращение поиска на 40%.</div>
+                    </div>
+                {% else %}
+                    <div class="small">
+                        <div class="fw-semibold">Рекомендация:</div>
+                        <div>Сфокусироваться на одной ключевой операции, чтобы сократить потери времени и ошибок (детали уточним на выездном аудите).</div>
+                        <div class="text-muted mt-2">Стоимость: уточняется. Эффект: снижение времени на ключевом этапе.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Блок 5: Что дальше #}
+        <div class="card dashboard-panel mb-4">
+            <div class="card-body">
+                <div class="h6 mb-3">Что дальше?</div>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button type="button" class="btn btn-outline-secondary" disabled>
+                        Скачать полный отчёт (PDF)
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" disabled>
+                        Экспорт в Excel
+                    </button>
+                    <button type="button" class="btn btn-primary" disabled>
+                        Записаться на аудит консультанта
+                    </button>
+                </div>
+
+                <div class="small text-muted mb-0">
+                    Самодиагностика даёт точность 60%. Для расчёта окупаемости решений нужен выездной аудит с хронометражем.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
