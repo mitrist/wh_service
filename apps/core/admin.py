@@ -8,6 +8,8 @@ from apps.core.models import (
     FullAuditLead,
     Question,
     UserAnswer,
+    WmsChecklistAnswer,
+    WmsChecklistSession,
 )
 from apps.reporting.tasks import generate_pdf_report
 
@@ -46,6 +48,26 @@ class AuditSessionAdmin(admin.ModelAdmin):
     def action_regenerate_pdf(self, request, queryset):
         for s in queryset.filter(status="completed"):
             generate_pdf_report.delay(str(s.id))
+
+
+class WmsChecklistAnswerInline(admin.TabularInline):
+    model = WmsChecklistAnswer
+    extra = 0
+    fields = ("item_number", "status")
+    ordering = ("item_number",)
+
+
+@admin.register(WmsChecklistSession)
+class WmsChecklistSessionAdmin(admin.ModelAdmin):
+    list_display = ("id", "created_at", "updated_at", "answers_filled")
+    list_filter = ("created_at",)
+    readonly_fields = ("id", "created_at", "updated_at")
+    inlines = [WmsChecklistAnswerInline]
+    ordering = ("-created_at",)
+
+    @admin.display(description="Заполнено ответов")
+    def answers_filled(self, obj: WmsChecklistSession) -> int:
+        return obj.answers.exclude(status__isnull=True).exclude(status="").count()
 
 
 @admin.register(FullAuditLead)

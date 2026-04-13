@@ -137,6 +137,7 @@ source .venv/bin/activate
 export DJANGO_SETTINGS_MODULE=config.settings.prod
 
 python manage.py migrate
+# Новые релизы могут добавлять таблицы (в т.ч. WMS чек-лист) — после git pull всегда выполняйте migrate.
 python manage.py collectstatic --noinput
 python manage.py seed_self_audit_questions --force
 python manage.py createsuperuser

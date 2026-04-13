@@ -184,3 +184,55 @@ class FullAuditLead(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.created_at:%Y-%m-%d %H:%M})"
+
+
+class WmsChecklistSession(models.Model):
+    """Интерактивный чек-лист готовности к WMS (отдельно от самоаудита)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Сессия WMS чек-листа"
+        verbose_name_plural = "Сессии WMS чек-листа"
+
+    def __str__(self) -> str:
+        return f"WmsChecklist {self.id}"
+
+
+class WmsChecklistAnswer(models.Model):
+    STATUS_READY = "ready"
+    STATUS_IN_PROGRESS = "in_progress"
+    STATUS_NOT_READY = "not_ready"
+    STATUS_CHOICES = (
+        (STATUS_READY, "Готово"),
+        (STATUS_IN_PROGRESS, "В процессе"),
+        (STATUS_NOT_READY, "Не готово"),
+    )
+
+    session = models.ForeignKey(
+        WmsChecklistSession,
+        on_delete=models.CASCADE,
+        related_name="answers",
+    )
+    item_number = models.PositiveSmallIntegerField()
+    status = models.CharField(
+        max_length=16,
+        choices=STATUS_CHOICES,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["session", "item_number"],
+                name="unique_wms_answer_per_session_item",
+            ),
+        ]
+        ordering = ["item_number"]
+
+    def __str__(self) -> str:
+        return f"{self.session_id} #{self.item_number} {self.status or '—'}"

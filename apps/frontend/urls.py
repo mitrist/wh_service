@@ -1,9 +1,32 @@
 from django.urls import path
 
 from apps.frontend import views
+from apps.frontend import views_wms
 
 urlpatterns = [
     path("", views.home, name="frontend_home"),
+    path("wms-checklist/", views_wms.wms_checklist_landing, name="frontend_wms_checklist_landing"),
+    path("wms-checklist/begin/", views_wms.wms_checklist_begin, name="frontend_wms_checklist_begin"),
+    path(
+        "wms-checklist/pdf/template/",
+        views_wms.wms_checklist_pdf_template,
+        name="frontend_wms_checklist_pdf_template",
+    ),
+    path(
+        "wms-checklist/<uuid:session_id>/answer/",
+        views_wms.wms_checklist_answer,
+        name="frontend_wms_checklist_answer",
+    ),
+    path(
+        "wms-checklist/<uuid:session_id>/pdf/",
+        views_wms.wms_checklist_pdf_session,
+        name="frontend_wms_checklist_pdf_session",
+    ),
+    path(
+        "wms-checklist/<uuid:session_id>/",
+        views_wms.wms_checklist_session,
+        name="frontend_wms_checklist_session",
+    ),
     path(
         "full-audit/request/",
         views.full_audit_lead_submit,

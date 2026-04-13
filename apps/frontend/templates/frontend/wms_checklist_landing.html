@@ -1,0 +1,65 @@
+{% extends "frontend/base.html" %}
+{% block title %}Чек-лист готовности к WMS — Райтек-логистика{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block content %}
+<div class="mx-auto" style="max-width: 40rem;">
+  <h1 class="h3 text-landing-primary mb-2">Чек-лист готовности склада к внедрению WMS</h1>
+  <p class="lead text-secondary mb-4">Инструмент самооценки. 10 критериев, 5 минут на заполнение.</p>
+
+  <hr class="my-4">
+
+  <h2 class="h5 text-landing-primary mb-3">Как работает</h2>
+  <ol class="text-secondary mb-4">
+    <li class="mb-2">Отметьте статус по каждому пункту: <strong>Готово</strong>, <strong>Не готово</strong> или <strong>В процессе</strong>.</li>
+    <li class="mb-2">Подсчитайте количество отметок «Готово».</li>
+    <li class="mb-2">Сверьтесь с итоговой таблицей — получите статус и рекомендации.</li>
+  </ol>
+
+  <form method="post" action="{% url 'frontend_wms_checklist_begin' %}" class="d-inline">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-lg mb-2 me-2" style="background:#E8610A;border-color:#E8610A;color:#fff;">Начать оценку</button>
+  </form>
+  <form method="post" action="{% url 'frontend_wms_checklist_begin' %}" class="d-inline">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-lg btn-outline-secondary mb-2">Пройти чек-лист</button>
+  </form>
+
+  <hr class="my-4">
+
+  <h2 class="h5 text-landing-primary mb-3">Что вы получите</h2>
+  <ul class="text-secondary mb-4">
+    <li class="mb-2"><strong>Оценка по 10 критериям:</strong> адресация, учёт, штрихкодирование, интеграция, бюджет, персонал и др.</li>
+    <li class="mb-2"><strong>Статус готовности:</strong> от «Ещё рано» до «Полная готовность».</li>
+    <li class="mb-2"><strong>Рекомендации:</strong> конкретные шаги по устранению выявленных пробелов.</li>
+  </ul>
+
+  <h2 class="h5 text-landing-primary mb-3">Ограничения инструмента</h2>
+  <ul class="text-secondary mb-4">
+    <li class="mb-2">Чек-лист — инструмент первичной самооценки, не заменяет выездной аудит.</li>
+    <li class="mb-2">Результаты носят ориентировочный характер.</li>
+    <li class="mb-2">Для точной диагностики рекомендуется профессиональный аудит.</li>
+  </ul>
+
+  <a href="{% url 'frontend_wms_checklist_pdf_template' %}" class="btn btn-outline-primary mb-4">Скачать чек-лист в PDF</a>
+
+  <p class="small text-muted border-start border-3 ps-3" style="border-color:#E8610A!important;">
+    Чек-лист — инструмент самооценки. Точная готовность определяется при выездном аудите.
+  </p>
+</div>
+{% endblock %}
+
+{% block site_footer %}
+<footer class="site-footer-landing py-4 mt-5" style="background: var(--landing-primary); color: rgba(255,255,255,0.88);">
+  <div class="container text-center small" style="max-width: 48rem;">
+    <p class="mb-0">
+      <a href="#" class="text-white">Политика конфиденциальности</a>
+      <span class="mx-2">·</span>
+      <a href="https://raytec.pro/" target="_blank" rel="noopener noreferrer" class="text-white">Контакты</a>
+      <span class="mx-2">·</span>
+      <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Заказать полный аудит</a>
+    </p>
+  </div>
+</footer>
+{% include "frontend/includes/full_audit_modal.html" %}
+{% endblock %}

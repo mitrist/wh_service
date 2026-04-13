@@ -5,7 +5,8 @@ from __future__ import annotations
 import io
 import logging
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -121,6 +122,149 @@ def build_audit_pdf_bytes(session_meta: Dict[str, Any], summary: Dict[str, Any])
 
     story.append(Spacer(1, 3 * mm))
     story.append(Paragraph(f"ID сессии: {_safe_text(session_meta.get('id'))}", styles["muted"]))
+
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=A4,
+        leftMargin=18 * mm,
+        rightMargin=18 * mm,
+        topMargin=14 * mm,
+        bottomMargin=14 * mm,
+    )
+    doc.build(story)
+    return buf.getvalue()
+
+
+def build_wms_checklist_pdf_bytes(
+    session_id: Optional[str],
+    status_by_item: Optional[Dict[int, Any]],
+) -> bytes:
+    """PDF чек-листа WMS: статусы опциональны (пустой словарь = шаблон)."""
+    from apps.frontend.wms_checklist_data import WMS_CHECKLIST_ITEMS, count_ready_answers, resolve_wms_band
+
+    buf = io.BytesIO()
+    fonts = _ensure_fonts()
+    styles = _build_styles(fonts)
+    st = status_by_item or {}
+    story: list[Any] = []
+
+    story.append(Paragraph("Чек-лист готовности склада к внедрению WMS", styles["title"]))
+    story.append(Spacer(1, 2 * mm))
+    story.append(
+        Paragraph(
+            _safe_text(
+                "WMS — дорогостоящий инструмент. Половина внедрений проваливается не из-за ПО, а потому что склад "
+                "был не готов. Оцените готовность до переговоров с интегратором.",
+            ),
+            styles["small"],
+        ),
+    )
+    story.append(Spacer(1, 3 * mm))
+    story.append(_section_divider())
+
+    status_label = {
+        "ready": "Готово",
+        "in_progress": "В процессе",
+        "not_ready": "Не готово",
+    }
+
+    wms_table_hdr = ParagraphStyle(
+        "wmsTableHdr",
+        parent=styles["small"],
+        fontName=fonts["bold"],
+        fontSize=8.5,
+        leading=10,
+        spaceBefore=0,
+        spaceAfter=0,
+    )
+    wms_table_cell = ParagraphStyle(
+        "wmsTableCell",
+        parent=styles["small"],
+        fontName=fonts["regular"],
+        fontSize=8.5,
+        leading=10.5,
+        spaceBefore=0,
+        spaceAfter=0,
+    )
+
+    for item in WMS_CHECKLIST_ITEMS:
+        story.append(Paragraph(f"{item.number}. {_safe_text(item.title)}", styles["h2"]))
+        story.append(Paragraph(_safe_text(item.subtitle), styles["normal"]))
+        rows = [
+            [
+                Paragraph(escape("Готово к WMS"), wms_table_hdr),
+                Paragraph(escape("Ещё не готово"), wms_table_hdr),
+            ],
+            [
+                Paragraph(escape(_safe_text(item.ready_text)), wms_table_cell),
+                Paragraph(escape(_safe_text(item.not_ready_text)), wms_table_cell),
+            ],
+        ]
+        wms_tbl = Table(rows, colWidths=[85 * mm, 85 * mm])
+        wms_tbl.setStyle(
+            TableStyle(
+                [
+                    ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#aab4c2")),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#eef2f7")),
+                ],
+            ),
+        )
+        story.append(wms_tbl)
+        if item.warning:
+            story.append(Spacer(1, 1 * mm))
+            story.append(Paragraph(f"<b>Внимание:</b> {_safe_text(item.warning)}", styles["small"]))
+        if item.tip:
+            story.append(Paragraph(f"<b>Совет:</b> {_safe_text(item.tip)}", styles["small"]))
+        st_val = st.get(item.number) if st else None
+        if st:
+            label = status_label.get(st_val, "—")
+            story.append(Paragraph(f"<b>Ваш статус по пункту:</b> {_safe_text(label)}", styles["normal"]))
+        story.append(Spacer(1, 2 * mm))
+        story.append(_section_divider())
+
+    all_filled = bool(st) and all(st.get(n) not in (None, "") for n in range(1, 11))
+    score = count_ready_answers(st) if all_filled else None
+    story.append(Paragraph("Итоговая шкала (по числу «Готово»)", styles["h2"]))
+    for sample, label in (
+        (0, "0–3"),
+        (4, "4–6"),
+        (7, "7–8"),
+        (9, "9–10"),
+    ):
+        b = resolve_wms_band(sample)
+        story.append(Paragraph(f"<b>{label} баллов — {_safe_text(b['title'])}</b>", styles["normal"]))
+        story.append(Paragraph(_safe_text(b["body"]), styles["small"]))
+        story.append(Spacer(1, 1 * mm))
+
+    if all_filled and score is not None:
+        band = resolve_wms_band(score)
+        story.append(Spacer(1, 2 * mm))
+        story.append(
+            Paragraph(
+                f"<b>Ваш результат:</b> «Готово» = {score} из 10. {_safe_text(band['title'])}.",
+                styles["normal"],
+            ),
+        )
+        story.append(Paragraph(_safe_text(band["body"]), styles["small"]))
+
+    story.append(Spacer(1, 4 * mm))
+    story.append(
+        Paragraph(
+            _safe_text(
+                "Пройти самоаудит склада можно на сайте сервиса. Чек-лист — инструмент самооценки; "
+                "точная готовность определяется при выездном аудите.",
+            ),
+            styles["muted"],
+        ),
+    )
+    if session_id:
+        story.append(Spacer(1, 2 * mm))
+        story.append(Paragraph(f"ID сессии: {_safe_text(session_id)}", styles["muted"]))
 
     doc = SimpleDocTemplate(
         buf,

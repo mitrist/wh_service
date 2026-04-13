@@ -1,0 +1,103 @@
+<div class="modal fade" id="fullAuditModal" tabindex="-1" aria-labelledby="fullAuditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="fullAuditModalLabel">Заказать полный аудит</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <form id="fullAuditForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="full-audit-name" class="form-label">Имя</label>
+            <input id="full-audit-name" name="name" type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="full-audit-contact" class="form-label">Адрес электронной почты или телефон</label>
+            <input id="full-audit-contact" name="contact" type="text" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label for="full-audit-method" class="form-label">Предпочитаемый способ связи</label>
+            <select id="full-audit-method" name="preferred_method" class="form-select" required>
+              <option value="">Выберите вариант</option>
+              <option value="email">Email</option>
+              <option value="phone">Телефон</option>
+            </select>
+          </div>
+          <p id="full-audit-success" class="small text-success mt-3 mb-0 d-none">Спасибо! Мы свяжемся с вами в ближайшее время.</p>
+          <p id="full-audit-error" class="small text-danger mt-2 mb-0 d-none" role="alert"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" id="full-audit-submit" class="btn btn-landing-primary">Отправить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    const form = document.getElementById('fullAuditForm');
+    if (!form) return;
+    const successEl = document.getElementById('full-audit-success');
+    const errEl = document.getElementById('full-audit-error');
+    const submitBtn = document.getElementById('full-audit-submit');
+    const url = "{% url 'frontend_full_audit_lead_submit' %}";
+
+    function getCookie(name) {
+      if (!document.cookie) return null;
+      const parts = document.cookie.split(';');
+      for (let i = 0; i < parts.length; i++) {
+        const c = parts[i].trim();
+        if (c.substring(0, name.length + 1) === name + '=') {
+          return decodeURIComponent(c.substring(name.length + 1));
+        }
+      }
+      return null;
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      successEl.classList.add('d-none');
+      errEl.classList.add('d-none');
+      const tokenInput = form.querySelector('[name=csrfmiddlewaretoken]');
+      const csrftoken = tokenInput ? tokenInput.value : getCookie('csrftoken');
+      const payload = {
+        name: document.getElementById('full-audit-name').value.trim(),
+        contact: document.getElementById('full-audit-contact').value.trim(),
+        preferred_method: document.getElementById('full-audit-method').value,
+      };
+      if (!payload.preferred_method) {
+        errEl.textContent = 'Выберите предпочитаемый способ связи.';
+        errEl.classList.remove('d-none');
+        return;
+      }
+      submitBtn.disabled = true;
+      try {
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken || '',
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload),
+        });
+        const data = await r.json().catch(function () { return {}; });
+        if (r.ok && data.ok) {
+          successEl.classList.remove('d-none');
+          form.reset();
+        } else {
+          errEl.textContent =
+            'Не удалось отправить заявку. Попробуйте позже или свяжитесь через раздел «Контакты» на raytec.pro.';
+          errEl.classList.remove('d-none');
+        }
+      } catch (err) {
+        errEl.textContent = 'Нет соединения с сервером. Проверьте интернет и попробуйте снова.';
+        errEl.classList.remove('d-none');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  })();
+</script>

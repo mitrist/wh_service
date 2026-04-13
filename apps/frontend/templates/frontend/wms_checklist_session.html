@@ -1,0 +1,242 @@
+{% extends "frontend/base.html" %}
+{% block title %}Чек-лист WMS — заполнение{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --wms-accent: #E8610A;
+    --wms-header-bg: #1A1A2E;
+    --wms-ready: #27AE60;
+    --wms-progress: #F39C12;
+    --wms-not: #C0392B;
+    --wms-warn-bg: #FFF3E6;
+  }
+  .wms-item-card {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .wms-item-head {
+    background: var(--wms-header-bg);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .wms-warn-box {
+    background: var(--wms-warn-bg);
+    border-left: 4px solid var(--wms-accent);
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  .wms-item-card.border-ready { border-color: var(--wms-ready) !important; border-width: 2px !important; }
+  .wms-item-card.border-in_progress { border-color: var(--wms-progress) !important; border-width: 2px !important; }
+  .wms-item-card.border-not_ready { border-color: var(--wms-not) !important; border-width: 2px !important; }
+  .wms-item-card.border-empty { border-color: #dee2e6 !important; }
+  .btn-wms-accent {
+    background: var(--wms-accent);
+    border-color: var(--wms-accent);
+    color: #fff;
+  }
+  .btn-wms-accent:hover { background: #cf5508; border-color: #cf5508; color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="wms-csrf" style="display:none">{% csrf_token %}</div>
+<div class="mx-auto" style="max-width: 52rem;">
+  <p class="small text-muted mb-2"><a href="{% url 'frontend_wms_checklist_landing' %}">← К описанию чек-листа</a></p>
+  <h1 class="h4 text-landing-primary mb-3">Чек-лист готовности склада к WMS</h1>
+
+  <div class="progress mb-2" style="height: 0.5rem;">
+    <div id="wms-progress-bar" class="progress-bar" role="progressbar"
+         style="width: {% widthratio filled_count 10 100 %}%; background: var(--wms-accent);"
+         aria-valuenow="{{ filled_count }}" aria-valuemin="0" aria-valuemax="10"></div>
+  </div>
+  <p class="small text-secondary mb-4" id="wms-progress-label">Заполнено: <span id="wms-filled-count">{{ filled_count }}</span> / 10</p>
+
+  {% for row in items_rows %}
+  {% with item=row.item st=row.status %}
+  <div class="wms-item-card card mb-4 shadow-sm border-2 {% if st == 'ready' %}border-ready{% elif st == 'in_progress' %}border-in_progress{% elif st == 'not_ready' %}border-not_ready{% else %}border-empty{% endif %}"
+       data-item="{{ item.number }}" data-status="{{ st|default:'' }}">
+    <div class="wms-item-head text-white px-3 py-2">{{ item.number }}. {{ item.title }}</div>
+    <div class="card-body">
+      <p class="text-secondary small mb-3" style="font-style: italic;">{{ item.subtitle }}</p>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="small text-uppercase text-muted mb-1">Готово к WMS</div>
+          <p class="small mb-0">{{ item.ready_text }}</p>
+        </div>
+        <div class="col-md-6">
+          <div class="small text-uppercase text-muted mb-1">Ещё не готово</div>
+          <p class="small mb-0">{{ item.not_ready_text }}</p>
+        </div>
+      </div>
+      {% if item.warning or item.tip %}
+      <div class="wms-warn-box mb-3">
+        {% if item.warning %}<p class="mb-2 small"><strong>Внимание:</strong> {{ item.warning }}</p>{% endif %}
+        {% if item.tip %}<p class="mb-0 small"><strong>Совет:</strong> {{ item.tip }}</p>{% endif %}
+      </div>
+      {% endif %}
+      <div class="btn-group flex-wrap" role="group" aria-label="Статус пункта {{ item.number }}">
+        <button type="button" class="btn btn-sm btn-outline-success wms-set-status {% if st == 'ready' %}active{% endif %}" data-status="ready">Готово</button>
+        <button type="button" class="btn btn-sm btn-outline-warning wms-set-status {% if st == 'in_progress' %}active{% endif %}" data-status="in_progress">В процессе</button>
+        <button type="button" class="btn btn-sm btn-outline-danger wms-set-status {% if st == 'not_ready' %}active{% endif %}" data-status="not_ready">Не готово</button>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+  {% endfor %}
+
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <button type="button" class="btn btn-wms-accent" id="wms-show-result" {% if not all_answered %}disabled{% endif %}>Показать результат</button>
+    <a class="btn btn-outline-secondary" href="{% url 'frontend_wms_checklist_pdf_session' session_id=session_id %}">Скачать PDF</a>
+  </div>
+
+  <div id="wms-result-block" class="{% if not all_answered %}d-none{% endif %} card border-2 mb-5">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Ваш результат</h2>
+      <p class="mb-2" id="wms-score-line">
+        {% if all_answered %}
+        По критерию «Готово»: <strong>{{ score }}</strong> из 10. <strong>{{ band.title }}</strong>.
+        {% else %}
+        Заполните все 10 пунктов, чтобы увидеть итог.
+        {% endif %}
+      </p>
+      <p class="text-secondary small mb-4" id="wms-band-body">{% if band %}{{ band.body }}{% endif %}</p>
+
+      <div id="wms-list-not-ready" class="{% if not_ready_titles %}{% else %}d-none{% endif %} mb-3">
+        <h3 class="h6">Пункты «Не готово»</h3>
+        <ul class="small mb-0" id="wms-ul-not-ready">
+          {% for t in not_ready_titles %}<li>{{ t }}</li>{% endfor %}
+        </ul>
+      </div>
+      <div id="wms-list-in-progress" class="{% if in_progress_titles %}{% else %}d-none{% endif %} mb-4">
+        <h3 class="h6">Пункты «В процессе»</h3>
+        <ul class="small mb-0" id="wms-ul-in-progress">
+          {% for t in in_progress_titles %}<li>{{ t }}</li>{% endfor %}
+        </ul>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-wms-accent">Пройти самоаудит склада</button>
+        </form>
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Задать вопрос специалисту</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block site_footer %}
+<footer class="site-footer-landing py-4 mt-3" style="background: var(--landing-primary); color: rgba(255,255,255,0.88);">
+  <div class="container text-center small" style="max-width: 48rem;">
+    <p class="mb-0">
+      <a href="#" class="text-white">Политика конфиденциальности</a>
+      <span class="mx-2">·</span>
+      <a href="https://raytec.pro/" target="_blank" rel="noopener noreferrer" class="text-white">Контакты</a>
+      <span class="mx-2">·</span>
+      <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Заказать полный аудит</a>
+    </p>
+  </div>
+</footer>
+{% include "frontend/includes/full_audit_modal.html" %}
+
+<script>
+(function () {
+  const answerUrl = "{% url 'frontend_wms_checklist_answer' session_id=session_id %}";
+  const tokenInput = document.querySelector('#wms-csrf input[name=csrfmiddlewaretoken]');
+  const csrftoken = tokenInput ? tokenInput.value : '';
+
+  function getCookie(name) {
+    if (!document.cookie) return null;
+    const parts = document.cookie.split(';');
+    for (let i = 0; i < parts.length; i++) {
+      const c = parts[i].trim();
+      if (c.substring(0, name.length + 1) === name + '=') {
+        return decodeURIComponent(c.substring(name.length + 1));
+      }
+    }
+    return null;
+  }
+
+  const csrf = csrftoken || getCookie('csrftoken') || '';
+
+  function setCardBorder(card, status) {
+    card.classList.remove('border-ready', 'border-in_progress', 'border-not_ready', 'border-empty');
+    card.dataset.status = status || '';
+    if (status === 'ready') card.classList.add('border-ready');
+    else if (status === 'in_progress') card.classList.add('border-in_progress');
+    else if (status === 'not_ready') card.classList.add('border-not_ready');
+    else card.classList.add('border-empty');
+    card.querySelectorAll('.wms-set-status').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.status === status);
+    });
+  }
+
+  function renderLists(notReady, inProgress) {
+    const wrapNr = document.getElementById('wms-list-not-ready');
+    const ulNr = document.getElementById('wms-ul-not-ready');
+    ulNr.innerHTML = (notReady || []).map(function (t) { return '<li>' + t + '</li>'; }).join('');
+    wrapNr.classList.toggle('d-none', !notReady || notReady.length === 0);
+    const wrapIp = document.getElementById('wms-list-in-progress');
+    const ulIp = document.getElementById('wms-ul-in-progress');
+    ulIp.innerHTML = (inProgress || []).map(function (t) { return '<li>' + t + '</li>'; }).join('');
+    wrapIp.classList.toggle('d-none', !inProgress || inProgress.length === 0);
+  }
+
+  function updateProgress(filled, data) {
+    document.getElementById('wms-filled-count').textContent = String(filled);
+    const pct = filled * 10;
+    const bar = document.getElementById('wms-progress-bar');
+    bar.style.width = pct + '%';
+    bar.setAttribute('aria-valuenow', String(filled));
+    const btnRes = document.getElementById('wms-show-result');
+    btnRes.disabled = filled < 10;
+    if (data && data.all_answered && data.band) {
+      document.getElementById('wms-result-block').classList.remove('d-none');
+      document.getElementById('wms-score-line').innerHTML =
+        'По критерию «Готово»: <strong>' + data.score + '</strong> из 10. <strong id="wms-band-title">' +
+        escapeHtml(data.band.title) + '</strong>.';
+      document.getElementById('wms-band-body').textContent = data.band.body;
+      renderLists(data.not_ready_titles || [], data.in_progress_titles || []);
+    }
+  }
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.querySelectorAll('.wms-item-card').forEach(function (card) {
+    card.querySelectorAll('.wms-set-status').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        const item = parseInt(card.dataset.item, 10);
+        const status = btn.dataset.status;
+        try {
+          const r = await fetch(answerUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrf,
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ item_number: item, status: status }),
+          });
+          const data = await r.json();
+          if (!r.ok || !data.ok) return;
+          setCardBorder(card, status);
+          updateProgress(data.filled_count, data);
+        } catch (e) { /* ignore */ }
+      });
+    });
+  });
+
+  document.getElementById('wms-show-result').addEventListener('click', function () {
+    const el = document.getElementById('wms-result-block');
+    el.classList.remove('d-none');
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+</script>
+{% endblock %}
