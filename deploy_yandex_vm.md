@@ -32,8 +32,11 @@ sudo apt install -y \
   git curl wget unzip \
   python3 python3-venv python3-pip \
   build-essential libpq-dev \
-  nginx redis-server postgresql postgresql-contrib
+  nginx redis-server postgresql postgresql-contrib \
+  fonts-dejavu-core
 ```
+
+Пакет `fonts-dejavu-core` нужен для PDF-отчёта: без TTF с кириллицей ReportLab подставляет Helvetica, и русский текст в файле превращается в «квадратики».
 
 Проверка и автозапуск:
 
@@ -255,16 +258,80 @@ sudo certbot renew --dry-run
 
 ---
 
-## 13) Обновление приложения
+## 13) Обновление приложения из Git
+
+Выполняйте на VM под тем же пользователем, от которого клонировали проект и который указан в `User=` в unit-файлах systemd (чтобы не ломались права на `.venv` и файлы).
+
+### 13.1) Подключение и проверка репозитория
+
+```bash
+ssh -i ~/.ssh/<KEY_NAME> <user>@<vm_public_ip>
+cd /opt/wh_service
+git status
+```
+
+- Если видите незакоммиченные правки в отслеживаемых файлах, либо сохраните их (`git stash`), либо не обновляйте, пока не разберётесь — иначе `git pull` может остановиться с конфликтом.
+- Файл `.env` в репозиторий не попадает (он локальный на сервере) — при обновлении он не перезаписывается.
+
+### 13.2) Получить изменения с GitHub
+
+Рекомендуется явно указать ветку (в проекте по умолчанию — `main`):
 
 ```bash
 cd /opt/wh_service
-git pull
+git fetch origin
+git pull origin main
+```
+
+Если появилось сообщение о конфликте слияния — разрешите конфликты вручную или откатитесь к последнему коммиту на сервере и повторите pull после исправления на стороне репозитория.
+
+### 13.3) Зависимости Python
+
+```bash
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+### 13.4) Миграции, статика, данные квиза
+
+```bash
+export DJANGO_SETTINGS_MODULE=config.settings.prod
+python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+Если в релизе менялись вопросы/ответы самоаудита (код или сиды), перезаполните вопросы:
+
+```bash
+python manage.py seed_self_audit_questions --force
+```
+
+### 13.5) Перезапуск сервисов
+
+```bash
+sudo systemctl restart wh-gunicorn wh-celery
+sudo systemctl reload nginx
+```
+
+Проверка:
+
+```bash
+sudo systemctl status wh-gunicorn --no-pager
+sudo systemctl status wh-celery --no-pager
+```
+
+### 13.6) Краткая шпаргалка (одним блоком)
+
+```bash
+cd /opt/wh_service
+git fetch origin && git pull origin main
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 export DJANGO_SETTINGS_MODULE=config.settings.prod
 python manage.py migrate
 python manage.py collectstatic --noinput
+# при необходимости: python manage.py seed_self_audit_questions --force
 sudo systemctl restart wh-gunicorn wh-celery
 sudo systemctl reload nginx
 ```
@@ -301,4 +368,14 @@ python3 -m venv /opt/wh_service/.venv
 
 ### На странице результата ошибка `Missing required answer for qX`
 Сессия не завершена полностью — нужно вернуться в квиз и ответить на пропущенный вопрос.
+
+### В PDF вместо русского текста «квадратики»
+На сервере не найден TTF с кириллицей (часто на минимальном образе Ubuntu). Установите шрифты и перезапустите Celery (PDF собирается в воркере):
+
+```bash
+sudo apt install -y fonts-dejavu-core
+sudo systemctl restart wh-celery
+```
+
+В логах воркера при старте генерации PDF должна появиться строка вида `pdf_generator: using fonts /usr/share/fonts/truetype/dejavu/...`. Если видите предупреждение про Helvetica — шрифты всё ещё не подхватились.
 

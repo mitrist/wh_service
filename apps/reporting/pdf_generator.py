@@ -1,8 +1,9 @@
-"""PDF report using ReportLab (Windows-friendly)."""
+"""PDF report using ReportLab (Cyrillic requires a TTF; Helvetica has no Cyrillic glyphs)."""
 
 from __future__ import annotations
 
 import io
+import logging
 import os
 from typing import Any, Dict
 
@@ -13,6 +14,8 @@ from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+logger = logging.getLogger(__name__)
 
 
 def build_audit_pdf_bytes(session_meta: Dict[str, Any], summary: Dict[str, Any]) -> bytes:
@@ -188,15 +191,41 @@ def _section_divider() -> Table:
 
 
 def _ensure_fonts() -> Dict[str, str]:
+    """Pick a Unicode TTF. On Linux VMs, try DejaVu/Liberation before Windows paths."""
     regular = "Helvetica"
     bold = "Helvetica-Bold"
-    candidates = [
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    bundled = (
+        os.path.join(here, "fonts", "DejaVuSans.ttf"),
+        os.path.join(here, "fonts", "DejaVuSans-Bold.ttf"),
+    )
+
+    candidates: list[tuple[str, str]] = [
+        bundled,
+        (
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        ),
+        (
+            "/usr/share/fonts/TTF/DejaVuSans.ttf",
+            "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+        ),
+        (
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        ),
+        (
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf",
+        ),
         ("C:/Windows/Fonts/arial.ttf", "C:/Windows/Fonts/arialbd.ttf"),
         ("C:/Windows/Fonts/calibri.ttf", "C:/Windows/Fonts/calibrib.ttf"),
         ("C:/Windows/Fonts/segoeui.ttf", "C:/Windows/Fonts/segoeuib.ttf"),
     ]
+
     for reg_path, bold_path in candidates:
-        if not (os.path.exists(reg_path) and os.path.exists(bold_path)):
+        if not (os.path.isfile(reg_path) and os.path.isfile(bold_path)):
             continue
         try:
             if "AppTextRegular" not in pdfmetrics.getRegisteredFontNames():
@@ -204,9 +233,18 @@ def _ensure_fonts() -> Dict[str, str]:
             if "AppTextBold" not in pdfmetrics.getRegisteredFontNames():
                 pdfmetrics.registerFont(TTFont("AppTextBold", bold_path))
             regular, bold = "AppTextRegular", "AppTextBold"
+            logger.info("pdf_generator: using fonts %s / %s", reg_path, bold_path)
             break
         except Exception:
-            continue
+            logger.exception("pdf_generator: failed to register font pair %s %s", reg_path, bold_path)
+
+    if regular == "Helvetica":
+        logger.warning(
+            "pdf_generator: Helvetica has no Cyrillic glyphs — PDF text will be unreadable. "
+            "On Ubuntu/Debian run: sudo apt install -y fonts-dejavu-core "
+            "or place DejaVuSans.ttf and DejaVuSans-Bold.ttf under apps/reporting/fonts/."
+        )
+
     return {"regular": regular, "bold": bold}
 
 
