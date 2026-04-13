@@ -154,3 +154,33 @@ class AuditReport(models.Model):
 
     def __str__(self) -> str:
         return f"Report for {self.session_id}"
+
+
+class FullAuditLead(models.Model):
+    """Заявка из модального окна «Заказать полный аудит» на лендинге."""
+
+    METHOD_EMAIL = "email"
+    METHOD_PHONE = "phone"
+    PREFERRED_METHOD_CHOICES = (
+        (METHOD_EMAIL, "Email"),
+        (METHOD_PHONE, "Телефон"),
+    )
+
+    name = models.CharField("Имя", max_length=200)
+    contact = models.CharField("Email или телефон", max_length=500)
+    preferred_method = models.CharField(
+        "Предпочитаемый способ связи",
+        max_length=16,
+        choices=PREFERRED_METHOD_CHOICES,
+    )
+    created_at = models.DateTimeField("Создано", auto_now_add=True)
+    email_sent = models.BooleanField("Письмо отправлено", default=False)
+    email_error = models.TextField("Ошибка отправки почты", blank=True, default="")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Заявка на полный аудит"
+        verbose_name_plural = "Заявки на полный аудит"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.created_at:%Y-%m-%d %H:%M})"

@@ -106,6 +106,16 @@ CELERY_TASK_ALWAYS_EAGER=False
 
 FRONTEND_URL=https://your-domain.ru
 API_ANON_THROTTLE=120/minute
+
+# Заявки «Заказать полный аудит»: получатели писем (через запятую). Пусто — заявки только в админке.
+FULL_AUDIT_NOTIFY_EMAILS=you@yourcompany.ru
+DEFAULT_FROM_EMAIL=noreply@your-domain.ru
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.your-provider.example
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=smtp_login
+EMAIL_HOST_PASSWORD=smtp_password
 ```
 
 Права на файл:

@@ -1,7 +1,14 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from apps.core.models import AnswerOption, AuditReport, AuditSession, Question, UserAnswer
+from apps.core.models import (
+    AnswerOption,
+    AuditReport,
+    AuditSession,
+    FullAuditLead,
+    Question,
+    UserAnswer,
+)
 from apps.reporting.tasks import generate_pdf_report
 
 
@@ -39,6 +46,15 @@ class AuditSessionAdmin(admin.ModelAdmin):
     def action_regenerate_pdf(self, request, queryset):
         for s in queryset.filter(status="completed"):
             generate_pdf_report.delay(str(s.id))
+
+
+@admin.register(FullAuditLead)
+class FullAuditLeadAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "name", "contact", "preferred_method", "email_sent")
+    list_filter = ("preferred_method", "email_sent", "created_at")
+    search_fields = ("name", "contact")
+    readonly_fields = ("created_at", "email_sent", "email_error")
+    ordering = ("-created_at",)
 
 
 @admin.register(AuditReport)
