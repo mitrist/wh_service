@@ -1,6 +1,8 @@
 {% extends "frontend/base.html" %}
 {% block title %}Точки потерь на складе{% endblock %}
 
+{% block header_actions %}{% endblock %}
+
 {% block extra_head %}
 <style>
   .landing-hero {
@@ -84,9 +86,10 @@
     </ul>
     <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
       {% csrf_token %}
-      <button type="submit" class="btn btn-lg btn-landing-accent px-4 py-3">Найти свои точки потерь →</button>
+      <button type="submit" class="btn btn-lg btn-landing-accent px-4 py-3">Пройти короткий тест →</button>
     </form>
-    <p class="small text-muted mt-3 mb-4">Бесплатно. Без звонков. Результат — сразу.</p>
+    <p class="small text-muted mt-3 mb-1">20 вопросов о здоровье Вашего склада</p>
+    <p class="small text-muted mb-4">Бесплатно. Без звонков. Результат — сразу.</p>
     <div class="micro-facts py-2">
       <p class="mb-2"><strong class="text-dark">По опыту аудитов:</strong></p>
       <p class="mb-1">— у большинства складов есть ошибки учёта</p>
@@ -272,15 +275,56 @@
 {% block site_footer %}
 <footer class="site-footer-landing">
   <div class="container text-center small" style="max-width: 48rem;">
-    <p class="mb-2">© {% now "Y" %}. Сервис самоаудита склада.</p>
-    <p class="mb-3 opacity-75">Методика — по материалам вебинара «Считаем реальные потери склада».</p>
     <p class="mb-0">
       <a href="#">Политика конфиденциальности</a>
       <span class="mx-2">·</span>
-      <a href="#">Контакты</a>
+      <a href="https://raytec.pro/" target="_blank" rel="noopener noreferrer">Контакты</a>
       <span class="mx-2">·</span>
-      <a href="#">Заказать полный аудит</a>
+      <a href="#" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Заказать полный аудит</a>
     </p>
   </div>
 </footer>
+
+<div class="modal fade" id="fullAuditModal" tabindex="-1" aria-labelledby="fullAuditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="fullAuditModalLabel">Заказать полный аудит</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <form id="fullAuditForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="full-audit-name" class="form-label">Имя</label>
+            <input id="full-audit-name" name="name" type="text" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="full-audit-contact" class="form-label">Адрес электронной почты или телефон</label>
+            <input id="full-audit-contact" name="contact" type="text" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label for="full-audit-method" class="form-label">Предпочитаемый способ связи</label>
+            <select id="full-audit-method" name="preferred_method" class="form-select" required>
+              <option value="">Выберите вариант</option>
+              <option value="email">Email</option>
+              <option value="phone">Телефон</option>
+            </select>
+          </div>
+          <p id="full-audit-success" class="small text-success mt-3 mb-0 d-none">Спасибо! Мы свяжемся с вами в ближайшее время.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="submit" class="btn btn-landing-primary">Отправить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('fullAuditForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    document.getElementById('full-audit-success').classList.remove('d-none');
+    this.reset();
+  });
+</script>
 {% endblock %}

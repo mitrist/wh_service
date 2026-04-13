@@ -4,7 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Складской аудит{% endblock %}</title>
+  <title>{% block title %}Райтек-логистика{% endblock %}</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
@@ -73,11 +74,7 @@
   </header>
 
   <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
-    <div class="offcanvas-header border-bottom">
-      <h5 class="offcanvas-title d-flex align-items-center gap-2" id="sidebarMenuLabel">
-        <i class="bi bi-graph-up-arrow text-landing-primary fs-4" aria-hidden="true"></i>
-        <span>Самоаудит склада</span>
-      </h5>
+    <div class="offcanvas-header border-bottom justify-content-end">
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
     </div>
     <div class="offcanvas-body offcanvas-nav">
@@ -92,7 +89,6 @@
           </button>
         </form>
       </nav>
-      <p class="small text-muted mt-4 mb-0">Сохраняйте ссылку на анкету, чтобы продолжить позже.</p>
     </div>
   </div>
 

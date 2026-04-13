@@ -1,10 +1,10 @@
 {% extends "frontend/base.html" %}
 {% block title %}Показать результат{% endblock %}
+{% block header_actions %}{% endblock %}
 {% block content %}
 <div class="mx-auto" style="max-width: 28rem;">
   <h1 class="h4 mb-3">Мы уже проанализировали ваши ответы и нашли несколько зон риска.</h1>
   <p class="text-secondary mb-4">Остался один шаг — и вы увидите свои три главные точки потерь.</p>
-  <p class="small text-muted mb-3">Ссылка на сессию (сохраните): <code class="user-select-all">{{ session_id }}</code></p>
 
   <form id="contact-form" class="card card-body shadow-sm">
     <div class="mb-3">

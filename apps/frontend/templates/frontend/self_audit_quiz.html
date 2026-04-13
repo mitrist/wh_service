@@ -1,5 +1,6 @@
 {% extends "frontend/base.html" %}
 {% block title %}Самоаудит склада{% endblock %}
+{% block header_actions %}{% endblock %}
 {% block extra_head %}
 <style>
   #quiz-progress-wrap { margin-bottom: 0.75rem; }
@@ -56,7 +57,6 @@
 </style>
 {% endblock %}
 {% block content %}
-<p class="text-muted small">Сессия: <code id="sid">{{ session_id }}</code> — сохраните URL браузера.</p>
 <div id="quiz-root" class="card card-body shadow-sm">
   <p id="loading">Загрузка вопросов…</p>
   <div id="panel" class="d-none">
