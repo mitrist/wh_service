@@ -151,6 +151,8 @@ class AuditReport(models.Model):
     )
     generated_at = models.DateTimeField(auto_now_add=True)
     summary = models.JSONField(default=dict)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
+    email_error = models.TextField(blank=True, default="")
 
     def __str__(self) -> str:
         return f"Report for {self.session_id}"
