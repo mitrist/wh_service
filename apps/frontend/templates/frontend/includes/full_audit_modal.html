@@ -24,17 +24,19 @@
               <option value="phone">Телефон</option>
             </select>
           </div>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" value="1" id="full-audit-consent" required>
+            <label class="form-check-label small" for="full-audit-consent">
+              Я согласен(на) на обработку моих персональных данных в соответствии с
+              <a href="/policy/" target="_blank" rel="noopener noreferrer">Политикой конфиденциальности</a>
+            </label>
+          </div>
           <p id="full-audit-success" class="small text-success mt-3 mb-0 d-none">Спасибо! Мы свяжемся с вами в ближайшее время.</p>
           <p id="full-audit-error" class="small text-danger mt-2 mb-0 d-none" role="alert"></p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
           <button type="submit" id="full-audit-submit" class="btn btn-landing-primary">Отправить</button>
-        </div>
-        <div class="px-3 pb-3">
-          <p class="small mb-0">
-            <strong><a href="/policy/" target="_blank" rel="noopener noreferrer">**Нажимая на кнопку «Отправить», Вы соглашаетесь на обработку персональных данных</a></strong>
-          </p>
         </div>
       </form>
     </div>
@@ -72,8 +74,14 @@
         contact: document.getElementById('full-audit-contact').value.trim(),
         preferred_method: document.getElementById('full-audit-method').value,
       };
+      const consent = document.getElementById('full-audit-consent');
       if (!payload.preferred_method) {
         errEl.textContent = 'Выберите предпочитаемый способ связи.';
+        errEl.classList.remove('d-none');
+        return;
+      }
+      if (!consent || !consent.checked) {
+        errEl.textContent = 'Подтвердите согласие на обработку персональных данных.';
         errEl.classList.remove('d-none');
         return;
       }

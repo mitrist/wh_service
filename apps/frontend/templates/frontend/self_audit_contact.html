@@ -19,6 +19,13 @@
       <label class="form-label">Компания</label>
       <input type="text" class="form-control" name="client_company" autocomplete="organization">
     </div>
+    <div class="form-check mb-3">
+      <input class="form-check-input" type="checkbox" value="1" id="contact-consent" required>
+      <label class="form-check-label small" for="contact-consent">
+        Я согласен(на) на обработку моих персональных данных в соответствии с
+        <a href="/policy/" target="_blank" rel="noopener noreferrer">Политикой конфиденциальности</a>
+      </label>
+    </div>
     <button type="submit" class="btn btn-landing-accent w-100">Показать результат →</button>
     <p class="small text-muted mt-3 mb-0">Мы не продаём email. Только ваш отчёт.</p>
     <div id="err" class="text-danger small mt-2"></div>
@@ -30,6 +37,10 @@ const SESSION_ID = '{{ session_id }}';
 document.getElementById('contact-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
+  if (!document.getElementById('contact-consent').checked) {
+    document.getElementById('err').textContent = 'Подтвердите согласие на обработку персональных данных.';
+    return;
+  }
   const body = {
     client_email: (fd.get('client_email') || '').trim(),
     client_name: (fd.get('client_name') || '').trim(),
