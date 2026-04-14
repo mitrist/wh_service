@@ -1,0 +1,64 @@
+{% extends "frontend/base.html" %}
+
+{% block title %}Отраслевые решения | ПЛК{% endblock %}
+{% block meta_description %}Готовые отраслевые решения для производства, ритейла, фармацевтики, алкоголя, одежды и оборудования.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .plk-solutions { padding: 3.5rem 1.25rem; }
+  .solutions__toggler { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .toggle__item { border: 1px solid rgba(0,0,0,.16); padding: .5rem .75rem; border-radius: .5rem; cursor: pointer; }
+  .toggle__item.active { background: #1E3A5F; color: #fff; border-color: #1E3A5F; }
+  .solution__holder { display: none; }
+  .solution__holder.active { display: block; }
+  .solution-card { border: 1px solid rgba(0,0,0,.1); border-radius: .75rem; padding: 1rem; background: #fff; }
+</style>
+{% endblock %}
+
+{% block main_container %}
+<section class="plk-solutions bg-light">
+  <div class="container" style="max-width:64rem;">
+    <h1 class="h2 mb-2">Отраслевые решения</h1>
+    <p class="text-muted mb-4">Слайдер из блока «Отраслевые решения» с контентом из WP.</p>
+    <div class="solutions__toggler">
+      <div class="toggler d-none"></div>
+      {% for item in solutions %}
+        <div class="toggle__item {% if forloop.first %}active{% endif %}" data-item="{{ forloop.counter0 }}">
+          {{ item.title }}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="solutions__wrapper">
+      {% for item in solutions %}
+        <div class="solution__holder {% if forloop.first %}active{% endif %}" id="{{ forloop.counter0 }}">
+          <article class="solution-card">
+            <h2 class="h4 mb-2">{{ item.title }}</h2>
+            <p class="mb-2">{{ item.short }}</p>
+            <p class="text-muted mb-3">{{ item.description }}</p>
+            <a href="{% url 'frontend_solution_detail' slug=item.slug %}" class="btn btn-sm btn-landing-primary">Подробнее</a>
+          </article>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    const tabs = Array.from(document.querySelectorAll(".toggle__item"));
+    const slides = Array.from(document.querySelectorAll(".solution__holder"));
+    if (!tabs.length || !slides.length) return;
+    const activate = (idx) => {
+      tabs.forEach((tab, i) => tab.classList.toggle("active", i === idx));
+      slides.forEach((slide, i) => slide.classList.toggle("active", i === idx));
+    };
+    tabs.forEach((tab, idx) => tab.addEventListener("click", () => activate(idx)));
+  })();
+</script>
+{% endblock %}
+
+{% block site_footer %}
+{% include "frontend/includes/wp_site_footer.html" %}
+{% endblock %}

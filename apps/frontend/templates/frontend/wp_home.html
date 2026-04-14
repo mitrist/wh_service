@@ -1,0 +1,95 @@
+{% extends "frontend/base.html" %}
+
+{% block title %}Райтек Логистика — Цифровая трансформация вашего склада{% endblock %}
+
+{% block extra_head %}
+<style>
+  .landing-hero {
+    background: linear-gradient(165deg, #eef2f7 0%, #fff 60%);
+    border-bottom: 1px solid rgba(30, 58, 95, 0.08);
+  }
+  .landing-section { padding: 3.5rem 1.25rem; }
+  @media (min-width: 768px) {
+    .landing-section { padding: 4rem 2rem; }
+  }
+  .landing-section-alt { background: #fff; }
+  .landing-kicker {
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--landing-primary);
+    text-transform: uppercase;
+  }
+  .landing-muted { color: #5c6570; }
+  .landing-card {
+    border: 1px solid rgba(30, 58, 95, 0.15);
+    border-radius: 0.5rem;
+    padding: 1.1rem 1.2rem;
+    background: #fff;
+    height: 100%;
+    color: #1f2d3d;
+    transition: box-shadow .18s ease, transform .18s ease;
+  }
+  .landing-card:hover {
+    box-shadow: 0 10px 24px rgba(30, 58, 95, 0.08);
+    transform: translateY(-2px);
+  }
+  .tools-box {
+    background: rgba(30, 58, 95, 0.06);
+    border-left: 4px solid var(--landing-primary);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.35rem;
+  }
+</style>
+{% endblock %}
+
+{% block main_container %}
+<section class="landing-hero landing-section">
+  <div class="container" style="max-width:64rem;">
+    <p class="landing-kicker mb-3">Райтек Логистика</p>
+    <h1 class="display-5 fw-bold text-landing-primary mb-3" style="line-height:1.2;">Цифровая трансформация вашего склада</h1>
+    <p class="lead landing-muted mb-0">Модернизируем складские процессы с помощью практичных решений, основанных на реальном опыте, и адаптируем их под уникальные задачи вашего бизнеса.</p>
+  </div>
+</section>
+
+<section class="landing-section landing-section-alt">
+  <div class="container" style="max-width:64rem;">
+    <h2 class="h3 text-landing-primary mb-4">Услуги</h2>
+    <div class="row g-3">
+      {% for service in services %}
+      <div class="col-md-4">
+        <a href="{% url 'frontend_service_detail' slug=service.slug %}" class="landing-card d-flex align-items-center text-decoration-none">
+          {{ service.title }}
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="landing-section bg-light">
+  <div class="container" style="max-width:64rem;">
+    <div class="tools-box">
+      <h2 class="h4 text-landing-primary mb-3">Инструменты и решения</h2>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-landing-accent btn-lg" href="{% url 'frontend_self_audit_landing' %}">Самоаудит склада</a>
+        <a class="btn btn-outline-secondary btn-lg" href="{% url 'frontend_wms_checklist_landing' %}">Чек-лист готовности к WMS</a>
+        <a class="btn btn-outline-secondary btn-lg" href="{% url 'frontend_solutions' %}">Отраслевые решения</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="landing-section bg-light">
+  <div class="container" style="max-width:64rem;">
+    <h2 class="h4 text-landing-primary mb-3">Получите бесплатную демонстрацию</h2>
+    <p class="landing-muted mb-3">Свяжитесь с нами через форму обратной связи — ответим в ближайшее время.</p>
+    <button type="button" class="btn btn-landing-primary" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Оставить заявку</button>
+  </div>
+</section>
+{% endblock %}
+
+{% block site_footer %}
+{% include "frontend/includes/full_audit_modal.html" %}
+{% include "frontend/includes/wp_site_footer.html" %}
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "frontend/base.html" %}
+
+{% block title %}{{ solution.title }} | ПЛК{% endblock %}
+{% block meta_description %}{{ solution.short }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .plk-detail { padding: 3.5rem 1.25rem; }
+  .plk-detail-card { border: 1px solid rgba(0,0,0,.1); border-radius: .75rem; background: #fff; padding: 1rem; }
+</style>
+{% endblock %}
+
+{% block main_container %}
+<section class="plk-detail bg-white">
+  <div class="container" style="max-width:64rem;">
+    <h1 class="h2 mb-2">{{ solution.title }}</h1>
+    <p class="text-muted mb-4">{{ solution.short }}</p>
+    <div class="plk-detail-card mb-3">
+      <p>{{ solution.description }}</p>
+      <p class="mb-3">Решение включает аудит текущих процессов, проектирование целевого контура, внедрение инструментов контроля и обучение команды.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'frontend_self_audit_landing' %}" class="btn btn-landing-primary">Пройти самоаудит</a>
+        <a href="{% url 'frontend_wms_checklist_landing' %}" class="btn btn-outline-secondary">Проверить готовность к WMS</a>
+      </div>
+    </div>
+    <h2 class="h4 mb-3">Другие решения</h2>
+    <div class="row g-2">
+      {% for item in solutions %}
+        {% if item.slug != solution.slug %}
+          <div class="col-md-4">
+            <a class="btn btn-outline-dark w-100" href="{% url 'frontend_solution_detail' slug=item.slug %}">{{ item.title }}</a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block site_footer %}
+{% include "frontend/includes/wp_site_footer.html" %}
+{% endblock %}

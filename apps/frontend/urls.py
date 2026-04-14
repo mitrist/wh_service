@@ -5,6 +5,10 @@ from apps.frontend import views_wms
 
 urlpatterns = [
     path("", views.home, name="frontend_home"),
+    path("services/<slug:slug>/", views.service_detail, name="frontend_service_detail"),
+    path("solutions/", views.solutions, name="frontend_solutions"),
+    path("solutions/<slug:slug>/", views.solution_detail, name="frontend_solution_detail"),
+    path("self-audit/", views.self_audit_landing, name="frontend_self_audit_landing"),
     path("wms-checklist/", views_wms.wms_checklist_landing, name="frontend_wms_checklist_landing"),
     path("wms-checklist/begin/", views_wms.wms_checklist_begin, name="frontend_wms_checklist_begin"),
     path(
