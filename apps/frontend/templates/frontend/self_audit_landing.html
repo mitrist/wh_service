@@ -1,0 +1,132 @@
+{% extends "frontend/base.html" %}
+{% block title %}Райтек-логистика{% endblock %}
+
+{% block header_actions %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .landing-hero {
+    background: linear-gradient(165deg, #eef2f7 0%, #fff 60%);
+    border-bottom: 1px solid rgba(30, 58, 95, 0.08);
+  }
+  .landing-section { padding: 3.5rem 1.25rem; }
+  @media (min-width: 768px) {
+    .landing-section { padding: 4rem 2rem; }
+  }
+  .landing-section-alt { background: #fff; }
+  .landing-kicker { letter-spacing: 0.06em; font-size: 0.75rem; font-weight: 600; color: var(--landing-primary); text-transform: uppercase; }
+  .landing-example-box {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    background: #1a1d23;
+    color: #e8eaed;
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.25rem;
+    white-space: pre-wrap;
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .loss-card {
+    border: 1px solid rgba(30, 58, 95, 0.15);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.35rem;
+    background: #fff;
+  }
+  .loss-card__title {
+    color: var(--landing-primary);
+    font-weight: 600;
+    font-size: 1.05rem;
+    margin-bottom: 0.65rem;
+  }
+  .loss-card__body {
+    color: #495057;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0.65rem;
+  }
+  .loss-card__arrow {
+    color: #2c5282;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-bottom: 0;
+    padding-top: 0.35rem;
+    border-top: 1px dashed rgba(30, 58, 95, 0.2);
+  }
+  .loss-closing {
+    background: rgba(30, 58, 95, 0.06);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.35rem;
+    border-left: 4px solid var(--landing-primary);
+  }
+  .micro-facts { font-size: 0.9rem; color: #5c6570; border-left: 3px solid var(--landing-accent); padding-left: 1rem; }
+  .site-footer-landing { background: var(--landing-primary); color: rgba(255,255,255,0.88); padding: 2.5rem 1.25rem; }
+  .site-footer-landing a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+  .compare-simple th { width: 34%; }
+</style>
+{% endblock %}
+
+{% block main_container %}
+
+{# БЛОК 1. HERO #}
+<section class="landing-hero landing-section">
+  <div class="container" style="max-width: 48rem;">
+    <h1 class="display-6 fw-bold text-landing-primary mb-4" style="line-height: 1.2;">
+      Давайте честно:<br>
+      ваш склад не идеален.<br>
+      И это нормально
+    </h1>
+    <p class="lead text-secondary mb-4">
+      Самоаудит за 15 минут покажет слабые зоны склада: точность, скорость, запасы и управляемость — и выделит 3 главные точки потерь.
+    </p>
+    <p class="text-secondary mb-4">Без сложных расчётов и без выезда консультанта.</p>
+    <ul class="list-unstyled text-secondary mb-4">
+      <li class="mb-2">→ Поймёте, где теряются деньги и время</li>
+      <li class="mb-2">→ Получите топ-3 проблем</li>
+      <li class="mb-2">→ Увидите, что можно исправить уже завтра</li>
+    </ul>
+    <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-lg btn-landing-accent px-4 py-3">Пройти короткий тест →</button>
+    </form>
+    <p class="small text-muted mt-3 mb-1">20 вопросов о здоровье Вашего склада</p>
+    <p class="small text-muted mb-4">Бесплатно. Без звонков. Результат — сразу.</p>
+  </div>
+</section>
+
+<section class="landing-section landing-section-alt">
+  <div class="container" style="max-width: 40rem;">
+    <h2 class="h3 text-landing-primary mb-3">Где на складе обычно теряются деньги</h2>
+    <p class="text-secondary mb-2">Это не теория — это типовые сценарии, которые мы видим на аудитах.</p>
+    <p class="text-secondary mb-4">Скорее всего, часть из них уже происходит у вас.</p>
+    <div class="row g-4 mb-4">
+      <div class="col-12"><div class="loss-card"><div class="loss-card__title">📦 Ошибки учёта и пересорт</div><p class="loss-card__body mb-0">Отгрузили не тот товар. Или «потеряли», а потом нашли через месяц.</p><p class="loss-card__arrow mb-0">→ Прямые убытки + недовольный клиент</p></div></div>
+      <div class="col-12"><div class="loss-card"><div class="loss-card__title">⏸️ Простои из-за склада</div><p class="loss-card__body mb-0">Производство или отгрузка ждёт: товар есть, но его не могут найти или собрать вовремя.</p><p class="loss-card__arrow mb-0">→ Вы платите за простой, а не за результат</p></div></div>
+      <div class="col-12"><div class="loss-card"><div class="loss-card__title">💰 Замороженный капитал (неликвид)</div><p class="loss-card__body mb-0">Товар лежит месяцами и занимает место.</p><p class="loss-card__arrow mb-0">→ Деньги не работают, склад забивается</p></div></div>
+      <div class="col-12"><div class="loss-card"><div class="loss-card__title">📄 Возвраты и доработки</div><p class="loss-card__body mb-0">Ошибки, брак, несоответствия → возврат → повторная обработка.</p><p class="loss-card__arrow mb-0">→ Двойные операции и потерянная маржа</p></div></div>
+      <div class="col-12"><div class="loss-card"><div class="loss-card__title">🕒 Потери внутри процессов</div><p class="loss-card__body mb-0">Кладовщики ищут товар, ходят за бумажками, ждут задания.</p><p class="loss-card__arrow mb-0">→ Зарплата платится, работа — нет</p></div></div>
+    </div>
+    <form method="post" action="{% url 'frontend_audit_begin' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-landing-primary">Проверить свой склад →</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block site_footer %}
+<footer class="site-footer-landing">
+  <div class="container text-center small" style="max-width: 48rem;">
+    <p class="mb-0">
+      <a href="/policy.pdf" target="_blank" rel="noopener noreferrer">Политика обработки и защиты персональных данных</a>
+      <span class="mx-2">·</span>
+      <a href="https://raytec.pro/" target="_blank" rel="noopener noreferrer">Контакты</a>
+      <span class="mx-2">·</span>
+      <a href="#" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Заказать полный аудит</a>
+    </p>
+  </div>
+</footer>
+
+{% include "frontend/includes/full_audit_modal.html" %}
+{% endblock %}
