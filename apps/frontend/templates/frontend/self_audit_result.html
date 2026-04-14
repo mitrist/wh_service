@@ -98,6 +98,16 @@
 const API = '{{ api_base }}';
 const SESSION_ID = '{{ session_id }}';
 
+function getCsrfToken() {
+  const cookie = document.cookie || '';
+  const parts = cookie.split(';');
+  for (let i = 0; i < parts.length; i++) {
+    const c = parts[i].trim();
+    if (c.startsWith('csrftoken=')) return decodeURIComponent(c.slice('csrftoken='.length));
+  }
+  return '';
+}
+
 function escapeHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
@@ -212,7 +222,13 @@ function fillResult(data, fullReport) {
 }
 
 async function complete() {
-  const r = await fetch(API + '/sessions/' + SESSION_ID + '/complete/', { method: 'POST' });
+  const r = await fetch(API + '/sessions/' + SESSION_ID + '/complete/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCsrfToken(),
+    },
+    credentials: 'same-origin',
+  });
   const txt = await r.text();
   if (!r.ok) {
     let detail = txt || r.statusText;

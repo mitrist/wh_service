@@ -34,6 +34,15 @@
 <script>
 const API = '{{ api_base }}';
 const SESSION_ID = '{{ session_id }}';
+function getCsrfToken() {
+  const cookie = document.cookie || '';
+  const parts = cookie.split(';');
+  for (let i = 0; i < parts.length; i++) {
+    const c = parts[i].trim();
+    if (c.startsWith('csrftoken=')) return decodeURIComponent(c.slice('csrftoken='.length));
+  }
+  return '';
+}
 document.getElementById('contact-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
@@ -49,7 +58,11 @@ document.getElementById('contact-form').addEventListener('submit', async (e) => 
   document.getElementById('err').textContent = '';
   const r = await fetch(API + '/sessions/' + SESSION_ID + '/', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCsrfToken(),
+    },
+    credentials: 'same-origin',
     body: JSON.stringify(body)
   });
   if (!r.ok) {

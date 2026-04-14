@@ -98,6 +98,16 @@ let step = 0;
 const TOAST_MS = 3000;
 let isTransitioning = false;
 
+function getCsrfToken() {
+  const cookie = document.cookie || '';
+  const parts = cookie.split(';');
+  for (let i = 0; i < parts.length; i++) {
+    const c = parts[i].trim();
+    if (c.startsWith('csrftoken=')) return decodeURIComponent(c.slice('csrftoken='.length));
+  }
+  return '';
+}
+
 async function loadQuestions() {
   const r = await fetch(API + '/questions/self/');
   if (!r.ok) throw new Error(await r.text());
@@ -219,7 +229,11 @@ function render() {
 async function patchAnswer(payload) {
   const r = await fetch(API + '/sessions/' + SESSION_ID + '/answers/', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCsrfToken(),
+    },
+    credentials: 'same-origin',
     body: JSON.stringify(payload)
   });
   if (!r.ok) {
