@@ -3,6 +3,7 @@
 {% block header_actions %}{% endblock %}
 {% block content %}
 <div class="mx-auto" style="max-width: 28rem;">
+  <div id="csrf-token-holder" class="d-none">{% csrf_token %}</div>
   <h1 class="h4 mb-3">Мы уже проанализировали ваши ответы и нашли несколько зон риска.</h1>
   <p class="text-secondary mb-4">Остался один шаг — и вы увидите свои три главные точки потерь.</p>
 
@@ -35,6 +36,8 @@
 const API = '{{ api_base }}';
 const SESSION_ID = '{{ session_id }}';
 function getCsrfToken() {
+  const tokenInput = document.querySelector('#csrf-token-holder input[name=csrfmiddlewaretoken]');
+  if (tokenInput && tokenInput.value) return tokenInput.value;
   const cookie = document.cookie || '';
   const parts = cookie.split(';');
   for (let i = 0; i < parts.length; i++) {

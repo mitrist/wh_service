@@ -58,6 +58,7 @@
 {% endblock %}
 {% block content %}
 <div id="quiz-root" class="card card-body shadow-sm">
+  <div id="csrf-token-holder" class="d-none">{% csrf_token %}</div>
   <p id="loading">Загрузка вопросов…</p>
   <div id="panel" class="d-none">
     <div id="quiz-progress-wrap">
@@ -99,6 +100,8 @@ const TOAST_MS = 3000;
 let isTransitioning = false;
 
 function getCsrfToken() {
+  const tokenInput = document.querySelector('#csrf-token-holder input[name=csrfmiddlewaretoken]');
+  if (tokenInput && tokenInput.value) return tokenInput.value;
   const cookie = document.cookie || '';
   const parts = cookie.split(';');
   for (let i = 0; i < parts.length; i++) {

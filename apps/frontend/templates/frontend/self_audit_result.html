@@ -12,6 +12,7 @@
 {% endblock %}
 {% block content %}
 <div class="mx-auto report-wrap">
+  <div id="csrf-token-holder" class="d-none">{% csrf_token %}</div>
   <div id="box" class="card card-body shadow-sm report-card">
     <p id="msg" class="mb-0">Формируем отчет…</p>
     <div id="result-panel" class="d-none mt-3">
@@ -99,6 +100,8 @@ const API = '{{ api_base }}';
 const SESSION_ID = '{{ session_id }}';
 
 function getCsrfToken() {
+  const tokenInput = document.querySelector('#csrf-token-holder input[name=csrfmiddlewaretoken]');
+  if (tokenInput && tokenInput.value) return tokenInput.value;
   const cookie = document.cookie || '';
   const parts = cookie.split(';');
   for (let i = 0; i < parts.length; i++) {
