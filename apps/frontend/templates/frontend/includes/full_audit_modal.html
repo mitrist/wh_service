@@ -1,3 +1,66 @@
+<style>
+  #fullAuditModal .modal-content {
+    border: 1px solid rgba(30, 58, 95, 0.2);
+    border-radius: 0.75rem;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+  }
+  #fullAuditModal .modal-header {
+    background: linear-gradient(120deg, #1e3a5f 0%, #152d4a 100%);
+    color: #fff;
+    border-bottom: 0;
+  }
+  #fullAuditModal .modal-title {
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  #fullAuditModal .btn-close {
+    filter: invert(1);
+    opacity: 0.9;
+  }
+  #fullAuditModal .modal-body {
+    background: #f8fafc;
+  }
+  #fullAuditModal .form-label {
+    color: #10253f;
+    font-weight: 600;
+  }
+  #fullAuditModal .form-control,
+  #fullAuditModal .form-select {
+    border: 1px solid rgba(30, 58, 95, 0.25);
+    background: #fff;
+  }
+  #fullAuditModal .form-control:focus,
+  #fullAuditModal .form-select:focus {
+    border-color: #e8610a;
+    box-shadow: 0 0 0 0.2rem rgba(232, 97, 10, 0.2);
+  }
+  #fullAuditModal .form-check-input:checked {
+    background-color: #e8610a;
+    border-color: #e8610a;
+  }
+  #fullAuditModal .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(232, 97, 10, 0.2);
+  }
+  #fullAuditModal .form-check-label a {
+    color: #c65308;
+    font-weight: 600;
+  }
+  #fullAuditModal .modal-footer {
+    background: #fff;
+    border-top: 1px solid rgba(30, 58, 95, 0.12);
+  }
+  #fullAuditModal .btn-submit-accent {
+    background: #e8610a;
+    border-color: #e8610a;
+    color: #fff;
+    font-weight: 600;
+  }
+  #fullAuditModal .btn-submit-accent:hover {
+    background: #cf5508;
+    border-color: #cf5508;
+    color: #fff;
+  }
+</style>
 <div class="modal fade" id="fullAuditModal" tabindex="-1" aria-labelledby="fullAuditModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -36,9 +99,19 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
-          <button type="submit" id="full-audit-submit" class="btn btn-landing-primary">Отправить</button>
+          <button type="submit" id="full-audit-submit" class="btn btn-submit-accent">Отправить</button>
         </div>
       </form>
+    </div>
+  </div>
+</div>
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1090;">
+  <div id="fullAuditSuccessToast" class="toast align-items-center text-bg-success border-0" role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Спасибо! Мы свяжемся с вами в ближайшее время.
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрыть"></button>
     </div>
   </div>
 </div>
@@ -46,6 +119,8 @@
   (function () {
     const form = document.getElementById('fullAuditForm');
     if (!form) return;
+    const modalEl = document.getElementById('fullAuditModal');
+    const toastEl = document.getElementById('fullAuditSuccessToast');
     const successEl = document.getElementById('full-audit-success');
     const errEl = document.getElementById('full-audit-error');
     const submitBtn = document.getElementById('full-audit-submit');
@@ -98,8 +173,16 @@
         });
         const data = await r.json().catch(function () { return {}; });
         if (r.ok && data.ok) {
-          successEl.classList.remove('d-none');
+          successEl.classList.add('d-none');
           form.reset();
+          if (window.bootstrap && modalEl) {
+            const instance = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+            instance.hide();
+          }
+          if (window.bootstrap && toastEl) {
+            const toast = window.bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 5000 });
+            toast.show();
+          }
         } else {
           errEl.textContent =
             'Не удалось отправить заявку. Попробуйте позже или свяжитесь через раздел «Контакты» на raytec.pro.';

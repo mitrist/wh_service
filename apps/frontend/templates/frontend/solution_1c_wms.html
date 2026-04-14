@@ -27,6 +27,32 @@
     background: #fff;
     height: 100%;
   }
+  .abilities-accordion .accordion-item {
+    border: 1px solid rgba(30, 58, 95, 0.14);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-bottom: .65rem;
+    background: #fff;
+  }
+  .abilities-accordion .accordion-button {
+    font-weight: 600;
+    color: #1f2d3d;
+    background: #fff;
+    box-shadow: none;
+    padding: .9rem 1.1rem;
+  }
+  .abilities-accordion .accordion-button:not(.collapsed) {
+    color: var(--landing-primary);
+    background: rgba(30, 58, 95, 0.05);
+    box-shadow: none;
+  }
+  .abilities-accordion .accordion-button:focus {
+    box-shadow: 0 0 0 .2rem rgba(30, 58, 95, .15);
+  }
+  .abilities-accordion .accordion-body {
+    color: #4c5866;
+    line-height: 1.55;
+  }
 </style>
 {% endblock %}
 
@@ -142,14 +168,127 @@
       <div class="col-md-4"><div class="landing-card"><strong>Ритейл</strong><ul class="mb-0 mt-2"><li>Товарное соседство и сезонность</li><li>Маркировка и идентификация</li><li>Управленческая отчетность</li></ul></div></div>
     </div>
 
-    <h2 class="h5 text-landing-primary mb-3">Основные возможности системы «1С:WMS Логистика. Управление складом»</h2>
-    <ul class="text-secondary mb-4">
-      <li>Гибкая топология складского комплекса и настройка пространств учета.</li>
-      <li>Управление задачами склада с фиксацией исполнителя, длительности и ошибок.</li>
-      <li>Маркировка продукции и операции через ТСД/АРМ.</li>
-      <li>Интеграция с <strong>1С:ERP</strong>, <strong>1С:УТ</strong>, <strong>1С:КА</strong>, <strong>1С:TMS</strong>.</li>
-      <li>Мобильный клиент для обработки складских задач.</li>
-    </ul>
+    <h2 class="h5 text-landing-primary mb-3">Основные возможности системы «1С:WMS Логистика»</h2>
+    <div class="accordion abilities-accordion mb-4" id="wmsAbilitiesAccordion">
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="wmsAbilityHeadingOne">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#wmsAbilityOne" aria-expanded="true" aria-controls="wmsAbilityOne">
+            Учет товара в адресном пространстве склада
+          </button>
+        </h3>
+        <div id="wmsAbilityOne" class="accordion-collapse collapse show" aria-labelledby="wmsAbilityHeadingOne" data-bs-parent="#wmsAbilitiesAccordion">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li>Учет в разрезе упаковок, сроков годности, партий, серийных номеров, акцизных марок и качества.</li>
+              <li>Учет тары и контроль габаритов товара.</li>
+              <li>ABC/XYZ анализ, учет акцизов, работа с блоками ячеек и учет комплектов.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="wmsAbilityHeadingTwo">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wmsAbilityTwo" aria-expanded="false" aria-controls="wmsAbilityTwo">
+            Управление основными складскими задачами
+          </button>
+        </h3>
+        <div id="wmsAbilityTwo" class="accordion-collapse collapse" aria-labelledby="wmsAbilityHeadingTwo" data-bs-parent="#wmsAbilitiesAccordion">
+          <div class="accordion-body">
+            <p><strong>Приемка товара:</strong> в доверительном режиме и под заказ, предварительный пересчет по местам и маркировка контейнеров.</p>
+            <p><strong>Стратегии размещения:</strong> автоматическое размещение, размещение через буфер, подпитка зоны отбора.</p>
+            <p><strong>Перемещение и подпитка:</strong> задачи на перемещение целых контейнеров и товарного состава, подпитка под потребность или регламент.</p>
+            <p class="mb-0"><strong>Качество и инвентаризация:</strong> контроль качества принятых/упакованных товаров, инвентаризация зон, ячеек и групп товаров.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="wmsAbilityHeadingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wmsAbilityThree" aria-expanded="false" aria-controls="wmsAbilityThree">
+            Работа с радиотерминалами сбора данных (ТСД)
+          </button>
+        </h3>
+        <div id="wmsAbilityThree" class="accordion-collapse collapse" aria-labelledby="wmsAbilityHeadingThree" data-bs-parent="#wmsAbilitiesAccordion">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li>Работа без операторов склада и онлайн-режим обработки задач.</li>
+              <li>Применение ТСД для всех ключевых и вспомогательных операций.</li>
+              <li>Единый контур исполнения складских процессов в реальном времени.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="wmsAbilityHeadingFour">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wmsAbilityFour" aria-expanded="false" aria-controls="wmsAbilityFour">
+            Управление ресурсами
+          </button>
+        </h3>
+        <div id="wmsAbilityFour" class="accordion-collapse collapse" aria-labelledby="wmsAbilityHeadingFour" data-bs-parent="#wmsAbilitiesAccordion">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li>Классификация, приоритизация и автоматическое распределение задач.</li>
+              <li>Контроль исполнения: исполнитель, длительность, простои и ошибки.</li>
+              <li>Права доступа по квалификации и зонам, KPI и расчет выработки.</li>
+              <li>Планирование численности смен и оптимизация маршрутов техники.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="wmsAbilityHeadingFive">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wmsAbilityFive" aria-expanded="false" aria-controls="wmsAbilityFive">
+            Расчет услуг ответственного хранения
+          </button>
+        </h3>
+        <div id="wmsAbilityFive" class="accordion-collapse collapse" aria-labelledby="wmsAbilityHeadingFive" data-bs-parent="#wmsAbilitiesAccordion">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li>Учет товара в разрезе владельцев.</li>
+              <li>Тарифы по операциям для каждого владельца.</li>
+              <li>Расчет стоимости услуг по фактически выполненным операциям.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="wmsAbilityHeadingSix">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wmsAbilitySix" aria-expanded="false" aria-controls="wmsAbilitySix">
+            Контроль работы склада и аналитика
+          </button>
+        </h3>
+        <div id="wmsAbilitySix" class="accordion-collapse collapse" aria-labelledby="wmsAbilityHeadingSix" data-bs-parent="#wmsAbilitiesAccordion">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li>Мониторы руководителя, заказов, задач и ресурсов.</li>
+              <li>Анализ заполненности склада, остатков и эффективности хранения.</li>
+              <li>План-факт анализ приемки и отгрузки, мониторинг выработки персонала.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h3 class="accordion-header" id="wmsAbilityHeadingSeven">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wmsAbilitySeven" aria-expanded="false" aria-controls="wmsAbilitySeven">
+            Обмен данными и интеграции
+          </button>
+        </h3>
+        <div id="wmsAbilitySeven" class="accordion-collapse collapse" aria-labelledby="wmsAbilityHeadingSeven" data-bs-parent="#wmsAbilitiesAccordion">
+          <div class="accordion-body">
+            <ul class="mb-0">
+              <li>Типовая интеграция с ERP, TMS, 1С:УТ и 1С:УПП.</li>
+              <li>Автоматическая загрузка/выгрузка с настраиваемой периодичностью обмена.</li>
+              <li>Адаптация схем интеграции под специфику учетной системы заказчика.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="landing-note mb-4">
       <h3 class="h6 text-landing-primary mb-2">Проанализировать ваши задачи и предложить решение</h3>

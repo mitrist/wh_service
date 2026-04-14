@@ -31,6 +31,29 @@
     .app-main-wrap { min-height: calc(100vh - 72px); }
     .offcanvas-nav .nav-link { border-radius: .375rem; }
     .offcanvas-nav .nav-link:hover { background: #f8f9fa; }
+    .offcanvas-nav .nav-link[data-bs-toggle="collapse"] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+    }
+    .offcanvas-nav .submenu-toggle-icon {
+      transition: transform .2s ease;
+      font-size: .8rem;
+    }
+    .offcanvas-nav .nav-link[aria-expanded="true"] .submenu-toggle-icon {
+      transform: rotate(180deg);
+    }
+    .offcanvas-nav .submenu-wrap {
+      padding-left: .5rem;
+      border-left: 1px solid rgba(0, 0, 0, .08);
+      margin-left: .5rem;
+    }
+    .offcanvas-nav .submenu-wrap .nav-link {
+      font-size: .95rem;
+      padding-top: .35rem;
+      padding-bottom: .35rem;
+    }
     .btn-landing-primary {
       --bs-btn-bg: var(--landing-primary);
       --bs-btn-border-color: var(--landing-primary);
@@ -83,13 +106,37 @@
         <a class="nav-link text-dark" href="{% url 'frontend_home' %}">
           <i class="bi bi-house-door me-2"></i>Главная
         </a>
-        <div class="mt-3 mb-1 small text-uppercase text-muted fw-semibold">Услуги</div>
-        <a class="nav-link text-dark" href="#services-audit">
-          <i class="bi bi-search me-2"></i>Выездной аудит склада
+
+        <a
+          class="nav-link text-dark mt-2"
+          data-bs-toggle="collapse"
+          href="#servicesMenu"
+          role="button"
+          aria-expanded="true"
+          aria-controls="servicesMenu"
+        >
+          <span><i class="bi bi-briefcase me-2"></i>Услуги</span>
+          <i class="bi bi-chevron-down submenu-toggle-icon"></i>
         </a>
-        <a class="nav-link text-dark" href="#services-design">
-          <i class="bi bi-diagram-3 me-2"></i>Проектирование процессов
-        </a>
+        <div class="collapse show submenu-wrap" id="servicesMenu">
+          <a class="nav-link text-dark" href="{% url 'frontend_service_detail' slug='log_audit' %}">
+            Логистический аудит склада
+          </a>
+          <a class="nav-link text-dark" href="{% url 'frontend_service_detail' slug='avtomatizacziya-skladov-i-wms' %}">
+            Автоматизация складов и WMS
+          </a>
+          <a class="nav-link text-dark" href="{% url 'frontend_service_detail' slug='skladskaya-analitika' %}">
+            Складская аналитика
+          </a>
+          <a class="nav-link text-dark" href="{% url 'frontend_service_detail' slug='tehnicheskoe-soprovozhdenie-i-podderzhka-po' %}">
+            Техническое сопровождение и поддержка 1С:WMS
+          </a>
+          <a class="nav-link text-dark" href="{% url 'frontend_service_detail' slug='konsultacziya-ot-ekspertov' %}">
+            Консультационные услуги
+          </a>
+        </div>
+
+        <div class="mt-3 mb-1 small text-uppercase text-muted fw-semibold">Решения</div>
         <a class="nav-link text-dark" href="{% url 'frontend_solution_1c_wms' %}">
           <i class="bi bi-box-seam me-2"></i>1С:WMS Логистика. Управление складом
         </a>

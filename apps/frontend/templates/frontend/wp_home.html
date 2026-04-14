@@ -30,6 +30,10 @@
     color: #1f2d3d;
     transition: box-shadow .18s ease, transform .18s ease;
   }
+  .landing-card-title {
+    font-weight: 600;
+    line-height: 1.35;
+  }
   .landing-card:hover {
     box-shadow: 0 10px 24px rgba(30, 58, 95, 0.08);
     transform: translateY(-2px);
@@ -55,11 +59,11 @@
 <section class="landing-section landing-section-alt">
   <div class="container" style="max-width:64rem;">
     <h2 class="h3 text-landing-primary mb-4">Услуги</h2>
-    <div class="row g-3">
+    <div class="row g-3 align-items-stretch">
       {% for service in services %}
-      <div class="col-md-4">
-        <a href="{% url 'frontend_service_detail' slug=service.slug %}" class="landing-card d-flex align-items-center text-decoration-none">
-          {{ service.title }}
+      <div class="col-12 col-md-6 col-xl-4 d-flex">
+        <a href="{% url 'frontend_service_detail' slug=service.slug %}" class="landing-card d-flex w-100 align-items-start text-decoration-none">
+          <span class="landing-card-title">{{ service.title }}</span>
         </a>
       </div>
       {% endfor %}
