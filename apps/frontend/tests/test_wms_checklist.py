@@ -1,8 +1,8 @@
 from django.db import IntegrityError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from apps.core.models import WmsChecklistAnswer, WmsChecklistSession
+from apps.core.models import NotificationLog, WmsChecklistAnswer, WmsChecklistSession
 from apps.frontend.wms_checklist_data import count_ready_answers, resolve_wms_band
 from apps.reporting.pdf_generator import build_wms_checklist_pdf_bytes
 
@@ -38,6 +38,28 @@ class WmsChecklistModelTests(TestCase):
 
 
 class WmsChecklistViewTests(TestCase):
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        CELERY_TASK_ALWAYS_EAGER=True,
+        NOTIFICATIONS_ENABLED=True,
+        FORM_NOTIFY_WMS_CHECKLIST_EMAILS=["ops@example.com"],
+    )
+    def test_notification_sent_when_all_items_answered(self):
+        s = WmsChecklistSession.objects.create()
+        for n in range(1, 11):
+            WmsChecklistAnswer.objects.create(session=s, item_number=n, status=None)
+        url = reverse("frontend_wms_checklist_answer", kwargs={"session_id": s.id})
+        for n in range(1, 11):
+            body = f'{{"item_number": {n}, "status": "ready"}}'
+            r = self.client.post(url, data=body, content_type="application/json")
+            self.assertEqual(r.status_code, 200)
+        self.assertTrue(
+            NotificationLog.objects.filter(
+                event_type="wms_checklist_completed",
+                entity_id=str(s.id),
+            ).exists(),
+        )
+
     def test_begin_redirect_and_seeds_answers(self):
         url = reverse("frontend_wms_checklist_begin")
         r = self.client.post(url)

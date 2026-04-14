@@ -6,6 +6,7 @@ from apps.core.models import (
     AuditReport,
     AuditSession,
     FullAuditLead,
+    NotificationLog,
     Question,
     UserAnswer,
     WmsChecklistAnswer,
@@ -76,6 +77,28 @@ class FullAuditLeadAdmin(admin.ModelAdmin):
     list_filter = ("preferred_method", "email_sent", "created_at")
     search_fields = ("name", "contact")
     readonly_fields = ("created_at", "email_sent", "email_error")
+    ordering = ("-created_at",)
+
+
+@admin.register(NotificationLog)
+class NotificationLogAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "event_type", "entity_id", "recipient_group", "status", "attempts")
+    list_filter = ("event_type", "status", "recipient_group")
+    search_fields = ("entity_id", "error", "message_id")
+    readonly_fields = (
+        "created_at",
+        "sent_at",
+        "event_type",
+        "entity_id",
+        "recipient_group",
+        "recipients",
+        "status",
+        "attempts",
+        "error",
+        "message_id",
+        "payload",
+        "context",
+    )
     ordering = ("-created_at",)
 
 

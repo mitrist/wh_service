@@ -1,0 +1,6 @@
+Новая заявка на полный аудит.
+
+Имя: {{ payload.name|default:"—" }}
+Контакт: {{ payload.contact|default:"—" }}
+Предпочитаемый способ связи: {{ payload.preferred_method_label|default:payload.preferred_method|default:"—" }}
+ID заявки: {{ payload.lead_id|default:"—" }}

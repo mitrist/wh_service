@@ -107,8 +107,14 @@ CELERY_TASK_ALWAYS_EAGER=False
 FRONTEND_URL=https://your-domain.ru
 API_ANON_THROTTLE=120/minute
 
-# Заявки «Заказать полный аудит»: получатели писем (через запятую). Пусто — заявки только в админке.
-FULL_AUDIT_NOTIFY_EMAILS=you@yourcompany.ru
+# Уведомления форм
+NOTIFICATIONS_ENABLED=True
+FORM_NOTIFY_DEFAULT_EMAILS=you@yourcompany.ru
+FORM_NOTIFY_FULL_AUDIT_EMAILS=you@yourcompany.ru
+FORM_NOTIFY_SELF_AUDIT_EMAILS=you@yourcompany.ru
+FORM_NOTIFY_WMS_CHECKLIST_EMAILS=you@yourcompany.ru
+# Legacy fallback для full-audit (можно оставить пустым при заполненном FORM_NOTIFY_FULL_AUDIT_EMAILS)
+FULL_AUDIT_NOTIFY_EMAILS=
 DEFAULT_FROM_EMAIL=noreply@your-domain.ru
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp.your-provider.example
@@ -345,6 +351,56 @@ python manage.py collectstatic --noinput
 # при необходимости: python manage.py seed_self_audit_questions --force
 sudo systemctl restart wh-gunicorn wh-celery
 sudo systemctl reload nginx
+```
+
+### 13.7) Rollout универсальных уведомлений форм (почта)
+
+После релиза с `apps/notifications` выполните отдельный чек:
+
+```bash
+cd /opt/wh_service
+source .venv/bin/activate
+export DJANGO_SETTINGS_MODULE=config.settings.prod
+
+# 1) Убедиться, что в .env заданы ключи уведомлений и SMTP
+grep -E "NOTIFICATIONS_ENABLED|FORM_NOTIFY_|EMAIL_BACKEND|EMAIL_HOST|EMAIL_PORT|EMAIL_USE_TLS|EMAIL_USE_SSL|EMAIL_HOST_USER|DEFAULT_FROM_EMAIL" /opt/wh_service/.env
+
+# 2) Применить миграции (создаётся таблица core_notificationlog)
+python manage.py migrate
+
+# 3) Перезапустить backend + worker (уведомления отправляет Celery)
+sudo systemctl restart wh-gunicorn wh-celery
+sudo systemctl status wh-gunicorn --no-pager
+sudo systemctl status wh-celery --no-pager
+```
+
+Быстрая smoke-проверка SMTP из Django:
+
+```bash
+cd /opt/wh_service
+source .venv/bin/activate
+export DJANGO_SETTINGS_MODULE=config.settings.prod
+
+python manage.py shell -c "from django.core.mail import send_mail; from django.conf import settings; print(send_mail('SMTP smoke test','If you received this email, SMTP works.', settings.DEFAULT_FROM_EMAIL, ['you@yourcompany.ru'], fail_silently=False))"
+```
+
+Проверка очереди/логов уведомлений:
+
+```bash
+cd /opt/wh_service
+source .venv/bin/activate
+export DJANGO_SETTINGS_MODULE=config.settings.prod
+
+python manage.py shell -c "from apps.core.models import NotificationLog; print('total=', NotificationLog.objects.count()); print('failed=', NotificationLog.objects.filter(status='failed').count()); print('last=', list(NotificationLog.objects.values('event_type','entity_id','status','created_at')[:5]))"
+sudo journalctl -u wh-celery -n 100 --no-pager
+```
+
+Аварийный fallback без отката кода:
+
+```bash
+cd /opt/wh_service
+sed -i 's/^NOTIFICATIONS_ENABLED=.*/NOTIFICATIONS_ENABLED=False/' /opt/wh_service/.env
+sudo systemctl restart wh-gunicorn wh-celery
 ```
 
 ---

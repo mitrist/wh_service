@@ -4,14 +4,14 @@ import json
 import logging
 from pathlib import Path
 
-from django.conf import settings
-from django.core.mail import send_mail
 from django.http import Http404
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
 from apps.core.models import AuditSession, FullAuditLead
+from apps.notifications.events import NotificationEvent
+from apps.notifications.services import enqueue_form_notification
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +230,7 @@ def self_audit_result(request, session_id):
 
 @require_POST
 def full_audit_lead_submit(request):
-    """Приём заявки «Заказать полный аудит»: БД + опционально письмо на FULL_AUDIT_NOTIFY_EMAILS."""
+    """Приём заявки «Заказать полный аудит»: БД + постановка универсального уведомления."""
     ctype = (request.content_type or "").split(";")[0].strip().lower()
     if ctype != "application/json":
         return JsonResponse({"ok": False, "error": "json_required"}, status=415)
@@ -254,32 +254,27 @@ def full_audit_lead_submit(request):
         contact=contact,
         preferred_method=preferred_method,
     )
-
-    recipients = [e.strip() for e in settings.FULL_AUDIT_NOTIFY_EMAILS if e and str(e).strip()]
-    if recipients:
-        method_label = dict(FullAuditLead.PREFERRED_METHOD_CHOICES).get(
-            preferred_method,
-            preferred_method,
-        )
-        subject = f"Заявка на полный аудит: {name}"
-        body = (
-            f"Имя: {name}\n"
-            f"Контакт: {contact}\n"
-            f"Предпочитаемый способ связи: {method_label}\n"
-        )
-        try:
-            send_mail(
-                subject=subject,
-                message=body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=recipients,
-                fail_silently=False,
-            )
-            lead.email_sent = True
-            lead.save(update_fields=["email_sent"])
-        except Exception as exc:
-            logger.exception("full_audit_lead: send_mail failed for lead id=%s", lead.id)
-            lead.email_error = str(exc)[:1000]
-            lead.save(update_fields=["email_error"])
+    method_label = dict(FullAuditLead.PREFERRED_METHOD_CHOICES).get(
+        preferred_method,
+        preferred_method,
+    )
+    notification = enqueue_form_notification(
+        event_type=NotificationEvent.FULL_AUDIT_LEAD_CREATED,
+        entity_id=str(lead.id),
+        payload={
+            "lead_id": str(lead.id),
+            "name": name,
+            "contact": contact,
+            "preferred_method": preferred_method,
+            "preferred_method_label": method_label,
+        },
+        context={"source": "full_audit_modal"},
+    )
+    if notification:
+        lead.email_sent = True
+        lead.email_error = ""
+    else:
+        lead.email_sent = False
+    lead.save(update_fields=["email_sent", "email_error"])
 
     return JsonResponse({"ok": True})

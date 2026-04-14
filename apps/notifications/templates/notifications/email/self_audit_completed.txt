@@ -1,0 +1,8 @@
+Self-audit завершен.
+
+Сессия: {{ payload.session_id|default:"—" }}
+Email: {{ payload.email|default:"—" }}
+Имя: {{ payload.name|default:"—" }}
+Компания: {{ payload.company|default:"—" }}
+Итоговый балл: {{ payload.total_score|default:"—" }}
+Грейд: {{ payload.total_grade|default:"—" }}

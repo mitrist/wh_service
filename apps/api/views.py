@@ -15,6 +15,8 @@ from apps.api.serializers import (
 )
 from apps.api.services import AnswerPatchInput, complete_session, patch_session_answer
 from apps.core.models import AuditReport, AuditSession, Question
+from apps.notifications.events import NotificationEvent
+from apps.notifications.services import enqueue_form_notification
 from apps.reporting.tasks import generate_pdf_report
 
 
@@ -62,6 +64,18 @@ class SessionDetailView(APIView):
         )
         ser.is_valid(raise_exception=True)
         ser.save()
+        if bool((ser.instance.client_email or "").strip()):
+            enqueue_form_notification(
+                event_type=NotificationEvent.SELF_AUDIT_CONTACT_CAPTURED,
+                entity_id=str(session.id),
+                payload={
+                    "session_id": str(session.id),
+                    "email": ser.instance.client_email,
+                    "name": ser.instance.client_name,
+                    "company": ser.instance.client_company,
+                },
+                context={"source": "self_audit_contact"},
+            )
         fresh = (
             AuditSession.objects.prefetch_related(
                 "answers__question",
@@ -133,6 +147,19 @@ class SessionCompleteView(SessionDetailView):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+        enqueue_form_notification(
+            event_type=NotificationEvent.SELF_AUDIT_COMPLETED,
+            entity_id=str(session.id),
+            payload={
+                "session_id": str(session.id),
+                "email": session.client_email,
+                "name": session.client_name,
+                "company": session.client_company,
+                "total_score": session.total_score,
+                "total_grade": session.total_grade,
+            },
+            context={"source": "self_audit_complete"},
+        )
         generate_pdf_report.delay(str(session.id))
         return Response(
             {

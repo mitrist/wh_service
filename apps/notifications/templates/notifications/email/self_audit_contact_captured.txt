@@ -1,0 +1,6 @@
+Новый контакт из self-audit.
+
+Сессия: {{ payload.session_id|default:"—" }}
+Email: {{ payload.email|default:"—" }}
+Имя: {{ payload.name|default:"—" }}
+Компания: {{ payload.company|default:"—" }}

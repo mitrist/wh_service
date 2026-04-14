@@ -186,6 +186,48 @@ class FullAuditLead(models.Model):
         return f"{self.name} ({self.created_at:%Y-%m-%d %H:%M})"
 
 
+class NotificationLog(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_SENT = "sent"
+    STATUS_SKIPPED = "skipped"
+    STATUS_FAILED = "failed"
+    STATUS_CHOICES = (
+        (STATUS_PENDING, "В очереди"),
+        (STATUS_SENT, "Отправлено"),
+        (STATUS_SKIPPED, "Пропущено"),
+        (STATUS_FAILED, "Ошибка"),
+    )
+
+    event_type = models.CharField(max_length=64)
+    entity_id = models.CharField(max_length=64)
+    recipient_group = models.CharField(max_length=64, default="internal")
+    recipients = models.JSONField(default=list, blank=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    attempts = models.PositiveIntegerField(default=0)
+    error = models.TextField(blank=True, default="")
+    message_id = models.CharField(max_length=255, blank=True, default="")
+    payload = models.JSONField(default=dict, blank=True)
+    context = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["event_type", "entity_id", "recipient_group"],
+                name="uniq_notification_event_entity_group",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["event_type", "entity_id"]),
+            models.Index(fields=["status", "created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.event_type}:{self.entity_id}:{self.recipient_group}"
+
+
 class WmsChecklistSession(models.Model):
     """Интерактивный чек-лист готовности к WMS (отдельно от самоаудита)."""
 

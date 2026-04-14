@@ -1,7 +1,7 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
-from apps.core.models import Question
+from apps.core.models import NotificationLog, Question
 
 
 class ApiFlowTests(TestCase):
@@ -17,6 +17,12 @@ class ApiFlowTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        CELERY_TASK_ALWAYS_EAGER=True,
+        NOTIFICATIONS_ENABLED=True,
+        FORM_NOTIFY_SELF_AUDIT_EMAILS=["ops@example.com"],
+    )
     def test_create_patch_complete_and_report(self):
         r = self.client.post("/api/v1/sessions/", {"mode": "self"}, format="json")
         self.assertEqual(r.status_code, 201, r.content)
@@ -46,6 +52,11 @@ class ApiFlowTests(TestCase):
         self.assertEqual(up.status_code, 200, up.content)
         cr = self.client.post(f"/api/v1/sessions/{sid}/complete/", format="json")
         self.assertEqual(cr.status_code, 200, cr.content)
+        event_types = set(
+            NotificationLog.objects.filter(entity_id=sid).values_list("event_type", flat=True),
+        )
+        self.assertIn("self_audit_contact_captured", event_types)
+        self.assertIn("self_audit_completed", event_types)
         body = cr.json()
         self.assertIn("result", body)
         self.assertIn("cta_focus", body["result"])

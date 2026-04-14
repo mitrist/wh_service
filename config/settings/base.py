@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.api",
     "apps.reporting",
     "apps.frontend",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
@@ -136,3 +137,17 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@localhost")
 # Через запятую, например: manager@raytec.pro,lead@raytec.pro
 FULL_AUDIT_NOTIFY_EMAILS = env.list("FULL_AUDIT_NOTIFY_EMAILS", default=[])
+NOTIFICATIONS_ENABLED = env.bool("NOTIFICATIONS_ENABLED", default=True)
+FORM_NOTIFY_DEFAULT_EMAILS = env.list("FORM_NOTIFY_DEFAULT_EMAILS", default=[])
+FORM_NOTIFY_FULL_AUDIT_EMAILS = env.list(
+    "FORM_NOTIFY_FULL_AUDIT_EMAILS",
+    default=[],
+)
+FORM_NOTIFY_SELF_AUDIT_EMAILS = env.list(
+    "FORM_NOTIFY_SELF_AUDIT_EMAILS",
+    default=[],
+)
+FORM_NOTIFY_WMS_CHECKLIST_EMAILS = env.list(
+    "FORM_NOTIFY_WMS_CHECKLIST_EMAILS",
+    default=[],
+)

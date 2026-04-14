@@ -1,0 +1,7 @@
+WMS checklist заполнен.
+
+Сессия: {{ payload.session_id|default:"—" }}
+Готово из 10: {{ payload.score|default:"—" }}
+Статус: {{ payload.band_title|default:"—" }}
+Не готово: {{ payload.not_ready_count|default:"0" }}
+В процессе: {{ payload.in_progress_count|default:"0" }}

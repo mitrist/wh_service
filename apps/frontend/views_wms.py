@@ -17,6 +17,8 @@ from apps.frontend.wms_checklist_data import (
     count_ready_answers,
     resolve_wms_band,
 )
+from apps.notifications.events import NotificationEvent
+from apps.notifications.services import enqueue_form_notification
 from apps.reporting.pdf_generator import build_wms_checklist_pdf_bytes
 
 
@@ -151,6 +153,19 @@ def wms_checklist_answer(request, session_id: UUID):
         for n in range(1, 11)
         if status_by_item.get(n) == WmsChecklistAnswer.STATUS_IN_PROGRESS
     ]
+    if all_ok and band:
+        enqueue_form_notification(
+            event_type=NotificationEvent.WMS_CHECKLIST_COMPLETED,
+            entity_id=str(session.id),
+            payload={
+                "session_id": str(session.id),
+                "score": score,
+                "band_title": band.get("title", ""),
+                "not_ready_count": len(not_ready_titles),
+                "in_progress_count": len(in_progress_titles),
+            },
+            context={"source": "wms_checklist"},
+        )
 
     return JsonResponse(
         {
