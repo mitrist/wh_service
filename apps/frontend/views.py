@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 _MAX_FULL_AUDIT_NAME = 200
 _MAX_FULL_AUDIT_CONTACT = 500
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_SERVICES_CONTENT_DIR = _PROJECT_ROOT / "apps" / "frontend" / "content" / "uslugi"
 _WP_SOLUTIONS = [
     {
         "slug": "proizvodstvo",
@@ -71,8 +72,12 @@ _WP_SERVICES_META = [
 
 
 def _load_service_content(file_name: str) -> dict[str, object]:
-    path = _PROJECT_ROOT / ".cursor" / "uslugi" / file_name
-    raw = path.read_text(encoding="utf-8").strip()
+    path = _SERVICES_CONTENT_DIR / file_name
+    try:
+        raw = path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        logger.warning("Service content file not found: %s", path)
+        return {"title": file_name, "body_lines": [], "source_file": file_name}
     lines = [line.strip() for line in raw.splitlines()]
     non_empty = [line for line in lines if line]
     title = non_empty[0] if non_empty else file_name
