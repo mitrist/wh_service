@@ -165,6 +165,26 @@ def self_audit_landing(request):
     )
 
 
+def about_company(request):
+    return render(
+        request,
+        "frontend/about_company.html",
+        {
+            "api_base": "/api/v1",
+        },
+    )
+
+
+def solution_1c_wms(request):
+    return render(
+        request,
+        "frontend/solution_1c_wms.html",
+        {
+            "api_base": "/api/v1",
+        },
+    )
+
+
 @require_POST
 def audit_begin(request):
     session = AuditSession.objects.create(

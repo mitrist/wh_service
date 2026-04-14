@@ -1,0 +1,107 @@
+{% extends "frontend/base.html" %}
+{% block title %}О компании — Райтек ДТГ{% endblock %}
+
+{% block extra_head %}
+<style>
+  .about-hero {
+    background: linear-gradient(165deg, #eef2f7 0%, #fff 60%);
+    border-bottom: 1px solid rgba(30, 58, 95, 0.08);
+  }
+  .about-section { padding: 3.5rem 1.25rem; }
+  @media (min-width: 768px) {
+    .about-section { padding: 4rem 2rem; }
+  }
+  .about-card {
+    border: 1px solid rgba(30, 58, 95, 0.15);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.35rem;
+    background: #fff;
+  }
+  .about-kicker {
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--landing-primary);
+    text-transform: uppercase;
+  }
+  .about-highlight {
+    background: rgba(30, 58, 95, 0.06);
+    border-left: 4px solid var(--landing-primary);
+    border-radius: 0.5rem;
+    padding: 1.1rem 1.2rem;
+  }
+</style>
+{% endblock %}
+
+{% block main_container %}
+<section class="about-hero about-section">
+  <div class="container" style="max-width: 56rem;">
+    <p class="about-kicker mb-3">О компании</p>
+    <h1 class="display-6 fw-bold text-landing-primary mb-3">Райтек ДТГ — системный интегратор для промышленности</h1>
+    <p class="lead text-secondary mb-2">Наша фирма занимается внедрением систем управления для промышленных производств в России.</p>
+    <p class="text-secondary mb-0">
+      <a href="tel:+74954311850">+7 (495) 431-18-50</a> ·
+      <a href="mailto:info@raytec.pro">info@raytec.pro</a>
+    </p>
+  </div>
+</section>
+
+<section class="about-section bg-white">
+  <div class="container" style="max-width: 56rem;">
+    <div class="about-card mb-4">
+      <p class="mb-3">Основа успеха компании — опыт и профессионализм специалистов. Наши компетенции востребованы у предприятий дискретного, процессного и гибридного типов производства:</p>
+      <ul class="mb-0">
+        <li>Машиностроение</li>
+        <li>Приборостроение</li>
+        <li>Металлообработка</li>
+        <li>Оборонная промышленность</li>
+        <li>Химия, пластик</li>
+        <li>Фармацевтическая промышленность</li>
+        <li>Алкогольная промышленность</li>
+        <li>Пищевая промышленность</li>
+      </ul>
+    </div>
+
+    <div class="about-highlight mb-4">
+      <p class="mb-1">Работаем на российском рынке с 2013 года. Численность сотрудников — 450 человек.</p>
+      <p class="mb-0"><a href="https://raytec.pro/clients/" target="_blank" rel="noopener noreferrer">Более 120 производственных компаний</a> выбрали нас в качестве партнера.</p>
+    </div>
+
+    <h2 class="h4 text-landing-primary mb-3">Статусы и достижения</h2>
+    <ul class="mb-4">
+      <li>Сертифицированный партнер 1С, <a href="https://1c.ru/rus/partners/franch-citylist.jsp?reg=&city=%D0%A2%D1%83%D0%BB%D0%B0&partnerName=%D0%A0%D0%B0%D0%B9%D1%82%D0%B5%D0%BA+%D0%94%D0%A2%D0%93&is_map_open=0&mark=true&pageNumber_inp=1#map_ancor" target="_blank" rel="noopener noreferrer">участник сети 1С:Франчайзинг</a></li>
+      <li><a href="https://1c.ru/rus/partners/franch-citylist.jsp?reg=&city=%D0%A2%D1%83%D0%BB%D0%B0&partnerName=%D0%A0%D0%B0%D0%B9%D1%82%D0%B5%D0%BA+%D0%94%D0%A2%D0%93&is_map_open=0&mark=true&pageNumber_inp=1#map_ancor" target="_blank" rel="noopener noreferrer">Входим в ТОП-7 в рейтинге партнеров</a> «<a href="https://1c.ru/rus/partners/ckerp.jsp" target="_blank" rel="noopener noreferrer">1С:Центры компетенции по ERP-решениям</a>»</li>
+      <li>Имеем статус «<a href="https://1c.ru/rus/partners/ckd-rate-info.jsp?id=45401" target="_blank" rel="noopener noreferrer">Центр компетенции по документообороту</a>»</li>
+      <li>Имеем статус «<a href="https://1c.ru/rus/partners/cup.jsp?city=%D0%A2%D1%83%D0%BB%D0%B0" target="_blank" rel="noopener noreferrer">Центр компетенции по управлению персоналом</a>»</li>
+      <li>Входим в список крупнейших консалтинговых групп и компаний России от <a href="https://raytec.pro/press-center/articles/reyting-raex-2023/" target="_blank" rel="noopener noreferrer">RAEX</a></li>
+      <li>Участник и победитель конкурсов: <a href="https://eawards.1c.ru/projects/perehod-s-1c-upp-na-1s-erp-upravlenie-holdingom-v-ooo-borskiy-zavod-torgovogo-oborudovaniya-219344/" target="_blank" rel="noopener noreferrer">1С:Проект года</a>, <a href="https://globalcio.ru/projectoftheyear/list/44331/" target="_blank" rel="noopener noreferrer">Проект года Global CIO</a>, <a href="https://globalcio.com/cases/14772/" target="_blank" rel="noopener noreferrer">Global CIO Project of the year 2024</a></li>
+    </ul>
+
+    <h2 class="h4 text-landing-primary mb-3">Наши фундаментальные отличия</h2>
+    <ul class="mb-4">
+      <li>Сфокусированность — <a href="https://raytec.pro/clients/" target="_blank" rel="noopener noreferrer">100% наших Заказчиков</a> — производственные предприятия.</li>
+      <li>Собственная практика по операционной эффективности производства — синергия консалтинга и цифровизации.</li>
+      <li>Экспертиза в производственном планировании, подтвержденная <a href="http://raytec.pro/clients/" target="_blank" rel="noopener noreferrer">реальными внедрениями</a>.</li>
+      <li>Собственная технология внедрения 1С:ERP на промышленных предприятиях ERP-PRODUCTION.</li>
+      <li>Успешный опыт внедрения 1С:ERP от 20 до 3500 активных пользователей.</li>
+      <li>Все специалисты компании имеют бэкграунд работы в промышленности.</li>
+    </ul>
+
+    <h2 class="h4 text-landing-primary mb-3">Наши услуги</h2>
+    <ul class="mb-4">
+      <li><a href="https://raytec.pro/services/perekhod-s-sap-na-1s/" target="_blank" rel="noopener noreferrer">Переход с SAP на 1С</a></li>
+      <li><a href="https://raytec.pro/services/avtomatizatsiya-planirovaniya-proizvodstva/" target="_blank" rel="noopener noreferrer">Автоматизация планирования производства</a></li>
+      <li><a href="https://raytec.pro/services/vnedrenie-1s-erp-2-v-proizvodstve/" target="_blank" rel="noopener noreferrer">Внедрение 1С:ERP в промышленности</a></li>
+      <li><a href="https://raytec.pro/services/informatsionno-tekhnologicheskoe-soprovozhdenie-1s-kp/" target="_blank" rel="noopener noreferrer">Информационно-технологическое сопровождение (ИТС)</a></li>
+    </ul>
+
+    <div class="about-card">
+      <h3 class="h5 text-landing-primary mb-3">Контакты</h3>
+      <p class="mb-2"><strong>МОСКВА</strong><br>123112, г. Москва, наб. Пресненская, д. 8, стр. 1, помещ. 625М</p>
+      <p class="mb-2"><strong>ТУЛА</strong><br>300012, проспект Ленина, 85/6, офис 311</p>
+      <p class="mb-2"><a href="tel:+74954311850">+7 (495) 431-18-50</a> · <a href="mailto:info@raytec.pro">info@raytec.pro</a></p>
+      <p class="mb-0"><a href="https://raytec.pro/upload/policy.pdf" target="_blank" rel="noopener noreferrer">Политика обработки и защиты персональных данных</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

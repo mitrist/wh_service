@@ -5,6 +5,12 @@ from apps.frontend import views_wms
 
 urlpatterns = [
     path("", views.home, name="frontend_home"),
+    path("about/", views.about_company, name="frontend_about_company"),
+    path(
+        "solutions/1s-wms-logistika-upravlenie-skladom/",
+        views.solution_1c_wms,
+        name="frontend_solution_1c_wms",
+    ),
     path("services/<slug:slug>/", views.service_detail, name="frontend_service_detail"),
     path("solutions/", views.solutions, name="frontend_solutions"),
     path("solutions/<slug:slug>/", views.solution_detail, name="frontend_solution_detail"),

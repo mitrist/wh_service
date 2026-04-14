@@ -1,0 +1,184 @@
+{% extends "frontend/base.html" %}
+{% load static %}
+{% block title %}1С:WMS Логистика. Управление складом — Райтек-логистика{% endblock %}
+{% block header_actions %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .landing-hero {
+    background: linear-gradient(165deg, #eef2f7 0%, #fff 60%);
+    border-bottom: 1px solid rgba(30, 58, 95, 0.08);
+  }
+  .landing-section { padding: 3.5rem 1.25rem; }
+  @media (min-width: 768px) {
+    .landing-section { padding: 4rem 2rem; }
+  }
+  .landing-section-alt { background: #fff; }
+  .landing-note {
+    background: rgba(30, 58, 95, 0.06);
+    border-left: 4px solid var(--landing-primary);
+    border-radius: 0.5rem;
+    padding: 1rem 1.15rem;
+  }
+  .landing-card {
+    border: 1px solid rgba(30, 58, 95, 0.15);
+    border-radius: 0.5rem;
+    padding: 1rem 1.15rem;
+    background: #fff;
+    height: 100%;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto" style="max-width: 56rem;">
+  <section class="landing-hero landing-section rounded-3 mb-4">
+    <h1 class="h3 text-landing-primary mb-3">1С:WMS Логистика. Управление складом</h1>
+    <p class="lead text-secondary mb-3">WMS cистема управления складом (Warehouse Management System) помогает управлять ежедневными складскими операциями от приемки до отгрузки.</p>
+    <p class="text-secondary mb-0">
+      <a href="tel:+74954311850">+7 (495) 431-18-50</a> ·
+      <a href="mailto:info@raytec.pro">info@raytec.pro</a>
+    </p>
+  </section>
+
+  <section class="landing-section landing-section-alt pt-0">
+    <h2 class="h5 text-landing-primary mb-3">1С:WMS Логистика. Управление складом</h2>
+    <p class="text-secondary mb-4">
+      Системы WMS являются ключевым компонентом управления логистической цепочкой и обеспечивают прозрачность всего запаса компании,
+      на складах и в пути в реальном времени. Помимо управления запасами, Система Управления Складом (СУС) предлагает инструменты
+      для процессов комплектования и упаковки, загрузки ресурсов и аналитики.
+    </p>
+
+    <h2 class="h5 text-landing-primary mb-3">Преимущества использования системы управления складом</h2>
+    <div class="row g-3 mb-4">
+      <div class="col-md-6"><div class="landing-card"><strong>Повышение операционной эффективности</strong><p class="mb-0 text-secondary">Автоматизация входящих/исходящих операций, сокращение ошибок комплектования, связка с ERP и TMS.</p></div></div>
+      <div class="col-md-6"><div class="landing-card"><strong>Сокращение отходов и затрат</strong><p class="mb-0 text-secondary">Контроль сроков, оптимизация хранения и маршрутов движения, снижение потерь.</p></div></div>
+      <div class="col-md-6"><div class="landing-card"><strong>Прозрачность запасов в реальном времени</strong><p class="mb-0 text-secondary">Штрихкодирование/RFID и точная прослеживаемость по всей цепочке.</p></div></div>
+      <div class="col-md-6"><div class="landing-card"><strong>Управление трудовыми ресурсами</strong><p class="mb-0 text-secondary">Прогнозирование потребности, расписания, назначение задач по квалификации и близости.</p></div></div>
+      <div class="col-12"><div class="landing-card"><strong>Улучшение отношений с клиентами и поставщиками</strong><p class="mb-0 text-secondary">Быстрее поставки, меньше ошибок, выше удовлетворенность и лояльность.</p></div></div>
+    </div>
+
+    <h2 class="h5 text-landing-primary mb-3">Как работает WMS</h2>
+    <div class="text-center mb-4">
+      <img src="{% static 'frontend/1s-wms-logistika-upravlenie-skladom/wms_workflow.png' %}" alt="Как работает WMS" class="img-fluid rounded border">
+    </div>
+
+    <h2 class="h5 text-landing-primary mb-3">WMS и ERP на примере приема товара на склад</h2>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered align-middle bg-white">
+        <thead>
+          <tr><th>ERP</th><th>WMS</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Отразить приход продукции на склад</td><td>Отразить приход продукции по количеству мест</td></tr>
+          <tr><td>Отразить размещение продукции по ячейкам хранения</td><td>Отразить пересчет и поступление каждой паллеты с продукцией на склад</td></tr>
+          <tr><td>—</td><td>Дополнительно отразить контрольный пересчет продукции (при необходимости)</td></tr>
+          <tr><td>—</td><td>Передать принятую продукцию на входной контроль / заблокировать партию</td></tr>
+          <tr><td>—</td><td>Разместить продукцию на хранение вручную / с помощью техники</td></tr>
+          <tr><td>—</td><td>Разместить часть продукции в зону отбора для быстрого подбора в заказы</td></tr>
+          <tr><td>—</td><td>Разместить продукцию на длительное хранение с помощью складской техники</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="h5 text-landing-primary mb-3">Какие задачи решают ERP и WMS</h2>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered align-middle bg-white">
+        <thead>
+          <tr><th>ERP</th><th>WMS</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Адресный учет</td><td>Управлять технологическими процессами склада</td></tr>
+          <tr><td>Работа с терминалом сбора данных</td><td>Использовать различные подходы для учета продукции на складе</td></tr>
+          <tr><td>Базовая логика подбора ячеек</td><td>Использовать разные технологии грузообработки продукции</td></tr>
+          <tr><td>—</td><td>Считать выработку сотрудников, строить систему мотивации на KPI</td></tr>
+          <tr><td>—</td><td>Получать аналитику по оценке работы склада в текущем времени</td></tr>
+          <tr><td>—</td><td>Интегрироваться со складским оборудованием (в т.ч. роботизированным)</td></tr>
+          <tr><td>—</td><td>Вести тарификацию услуг по обработке грузов</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="h5 text-landing-primary mb-3">Функционал WMS и ERP</h2>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered align-middle bg-white">
+        <thead>
+          <tr><th>Направление</th><th>ERP</th><th>WMS</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Подключение складского оборудования</strong></td>
+            <td>Подключение возможно, но ограничено и не для всех задач подходит.</td>
+            <td>Совместимость с широким спектром техники: от сканеров до автоматических погрузчиков.</td>
+          </tr>
+          <tr>
+            <td><strong>Автоматизация погрузки и разгрузки</strong></td>
+            <td>Сложно автоматизировать, много операций остается ручными.</td>
+            <td>Автоматизация управления погрузкой/разгрузкой и формирование заданий без участия человека.</td>
+          </tr>
+          <tr>
+            <td><strong>Управление складскими мощностями</strong></td>
+            <td>Требует доработок, так как склад — не основная задача ERP.</td>
+            <td>Профильная экспертиза по автоматизации складов и эффективному управлению мощностями.</td>
+          </tr>
+          <tr>
+            <td><strong>Скорость обработки информации</strong></td>
+            <td>Сравнительно медленная реакция на запросы в складском контуре.</td>
+            <td>Быстрая обработка данных и автоматический подбор оптимальных решений.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="h5 text-landing-primary mb-3">Уровни WMS и ERP</h2>
+    <div class="text-center mb-4">
+      <img src="{% static 'frontend/1s-wms-logistika-upravlenie-skladom/wms_pyramid.png' %}" alt="Уровни WMS и ERP" class="img-fluid rounded border">
+    </div>
+
+    <h2 class="h5 text-landing-primary mb-3">Функциональность по отраслям</h2>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4"><div class="landing-card"><strong>Пищевое производство</strong><ul class="mb-0 mt-2"><li>Маркировка и прослеживаемость</li><li>Контроль сроков годности</li><li>Работа склада в такт производству</li></ul></div></div>
+      <div class="col-md-4"><div class="landing-card"><strong>Промышленное производство</strong><ul class="mb-0 mt-2"><li>Адресное хранение</li><li>Управление ресурсами</li><li>Планирование работы персонала</li></ul></div></div>
+      <div class="col-md-4"><div class="landing-card"><strong>Ритейл</strong><ul class="mb-0 mt-2"><li>Товарное соседство и сезонность</li><li>Маркировка и идентификация</li><li>Управленческая отчетность</li></ul></div></div>
+    </div>
+
+    <h2 class="h5 text-landing-primary mb-3">Основные возможности системы «1С:WMS Логистика. Управление складом»</h2>
+    <ul class="text-secondary mb-4">
+      <li>Гибкая топология складского комплекса и настройка пространств учета.</li>
+      <li>Управление задачами склада с фиксацией исполнителя, длительности и ошибок.</li>
+      <li>Маркировка продукции и операции через ТСД/АРМ.</li>
+      <li>Интеграция с <strong>1С:ERP</strong>, <strong>1С:УТ</strong>, <strong>1С:КА</strong>, <strong>1С:TMS</strong>.</li>
+      <li>Мобильный клиент для обработки складских задач.</li>
+    </ul>
+
+    <div class="landing-note mb-4">
+      <h3 class="h6 text-landing-primary mb-2">Проанализировать ваши задачи и предложить решение</h3>
+      <p class="mb-2">Отправьте запрос для обсуждения ваших задач, и мы свяжемся с вами в ближайшее время.</p>
+      <button type="button" class="btn btn-landing-primary" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Бесплатная консультация</button>
+    </div>
+
+    <h2 class="h6 text-landing-primary mb-2">Контакты</h2>
+    <p class="mb-1"><strong>МОСКВА</strong>: 123112, г. Москва, наб. Пресненская, д. 8, стр. 1, помещ. 625М</p>
+    <p class="mb-1"><strong>ТУЛА</strong>: 300012, проспект Ленина, 85/6, офис 311</p>
+    <p class="mb-3"><a href="tel:+74954311850">+7 (495) 431-18-50</a> · <a href="mailto:info@raytec.pro">info@raytec.pro</a></p>
+    <p class="small mb-0"><a href="https://raytec.pro/upload/policy.pdf" target="_blank" rel="noopener noreferrer">Политика обработки и защиты персональных данных</a></p>
+  </section>
+</div>
+{% endblock %}
+
+{% block site_footer %}
+<footer class="site-footer-landing py-4 mt-5" style="background: var(--landing-primary); color: rgba(255,255,255,0.88);">
+  <div class="container text-center small" style="max-width: 48rem;">
+    <p class="mb-0">
+      <a href="/policy.pdf" target="_blank" rel="noopener noreferrer" class="text-white">Политика обработки и защиты персональных данных</a>
+      <span class="mx-2">·</span>
+      <a href="https://raytec.pro/about/" target="_blank" rel="noopener noreferrer" class="text-white">Источник страницы</a>
+      <span class="mx-2">·</span>
+      <a href="https://raytec.pro/solutions/1s-wms-logistika-upravlenie-skladom/" target="_blank" rel="noopener noreferrer" class="text-white">Оригинал решения</a>
+      <span class="mx-2">·</span>
+      <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#fullAuditModal">Заказать полный аудит</a>
+    </p>
+  </div>
+</footer>
+{% include "frontend/includes/full_audit_modal.html" %}
+{% endblock %}
